@@ -1,0 +1,43 @@
+<?xml version="1" encoding="UTF-8"?>
+<!DOCTYPE gowin-fpga-project>
+<Project>
+    <Template>FPGA</Template>
+    <Version>5</Version>
+    <Device name="GW1NR-9C" pn="GW1NR-LV9QN88PC6/I5">gw1nr9c-004</Device>
+    <FileList>
+        <File path="src/gowin_rpll/gowin_rpll.v" type="file.verilog" enable="1"/>
+        <File path="src/psram_memory_interface_hs_v2/psram_memory_interface_hs_v2.v" type="file.verilog" enable="1"/>
+        <File path="../rtl/burst_bus_arbiter.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/burst_writer.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/coefficients.svh" type="file.verilog" enable="1"/>
+        <File path="../rtl/common.svh" type="file.verilog" enable="1"/>
+        <File path="../rtl/composite_video_encoder.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/configuration.svh" type="file.verilog" enable="1"/>
+        <File path="../rtl/debug_busmaster.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/delayfifo32.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/ebu75.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/filter/filter_chroma_preemphasis_lowpass.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/filter/filter_pal_carrier.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/filter/filter_pal_luma.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/filter/filter_secam_amplitude_lowpass.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/filter/filter_secam_chroma_lowpass.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/filter/pal_chroma_lowpass.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/framebuffer.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/logic_analyzer.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/memory_tester.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/pal_ntsc_encoder.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/qam.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/secam_ampl.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/secam_encoder.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/sinus.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/top_testpic_generator.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/top_dactest_frequency.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/top_dactest_sawtooth.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/uart_busmaster.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/uart_rx.v" type="file.verilog" enable="1"/>
+        <File path="../rtl/uart_tx.v" type="file.verilog" enable="1"/>
+        <File path="../rtl/video_timing.sv" type="file.verilog" enable="1"/>
+        <File path="src/fpga_pong.cst" type="file.cst" enable="1"/>
+        <File path="src/fpga_pong.sdc" type="file.sdc" enable="1"/>
+    </FileList>
+</Project>

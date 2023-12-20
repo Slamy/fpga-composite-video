@@ -1,0 +1,10 @@
+/gowin/fpga_pong.gprj.user
+/tools/__pycache__/
+*.bak
+/sim*/work
+
+/sim*/memory.cr.mti
+/sim*/transcript
+/sim*/vsim.wlf
+/sim/raw_video.png
+/tools/secam_carrier.txt
