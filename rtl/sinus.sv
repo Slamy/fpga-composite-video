@@ -13,21 +13,27 @@ module sinus (
 
     bit signed [7:0] lut[2048];
 
+    bit [4:0] phase_q;
+    bit signed [5:0] amplitude_q;
+
     initial begin
         $readmemh("../mem/sinewave.txt", lut);
     end
 
     always_comb begin
-        if (amplitude < 0) begin
-            amplitude_index = -amplitude;
-            phase_internal  = phase + 16;
+        if (amplitude_q < 0) begin
+            amplitude_index = -amplitude_q;
+            phase_internal  = phase_q + 16;
         end else begin
-            amplitude_index = amplitude;
-            phase_internal  = phase;
+            amplitude_index = amplitude_q;
+            phase_internal  = phase_q;
         end
     end
 
     always_ff @(posedge clk) begin
+        amplitude_q <= amplitude;
+        phase_q <= phase;
+
         out <= lut[index];
     end
 

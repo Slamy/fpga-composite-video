@@ -15,7 +15,7 @@ def capture_still_frame():
 
     # For some reason the brightness can only be set after reading one frame
     ret, frame = cap.read()
-    #cap.set(cv2.CAP_PROP_BRIGHTNESS, 350)
+    # cap.set(cv2.CAP_PROP_BRIGHTNESS, 350)
 
     for i in range(10):
         ret, frame = cap.read()
@@ -32,7 +32,7 @@ def capture_video():
 
     # For some reason the brightness can only be set after reading one frame
     ret, frame = cap.read()
-    #cap.set(cv2.CAP_PROP_BRIGHTNESS, 420)
+    # cap.set(cv2.CAP_PROP_BRIGHTNESS, 420)
 
     while (True):
         ret, frame = cap.read()

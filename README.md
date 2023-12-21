@@ -4,43 +4,76 @@ This project aims to implement an encoder on FPGA basis to convert a digital YUV
 
 ## Features
 
-* Generator for video timing
-    * Variable number of lines for 50 and 60 Hz. switchable on the fly.
 * PAL and NTSC
-    * Single QAM module for both.
+    * Single QAM and burst generator for both.
     * Phase alternation switchable on the fly
 * SECAM (not optimal due to lack of information)
     * Video pre-emphasis (not conform to standard, help from expert required)
     * HF Pre-emphasis (not conform to standard, help from expert required)
-* Comes with framebuffer device for actual test pictures
-* Configurable delay lines to match luma and chroma filter delays
-* Uses 8 bit resistor ladder as digital analog converter
+* Comes with generator for video timing.
+    * Variable number of lines for 50 and 60 Hz. Configuration on the fly.
+    * Interlaced and non-interlaced mode (eg. 625 line PAL or 312 line PAL)
+* Comes with framebuffer device for bitmap test pictures.
+    * Optional internal RGB to YCbCr conversion
+* Optional delay lines to match luma and chroma filter delays.
+* Uses 8 bit R2R ladder as digital analog converter.
+* Uses direct digital synthesis for color carrier sine wave generation.
 * Sample rates and filter coefficients configurable via Python script.
-* Configuration interface via UART and Python scripts
+* Realtime configuration interface via UART and Python scripts.
     * Uses SciPy to generate filter coefficients
-* "Hardware in the loop" testing using USB video grabber
+    * DAC sample rate can be changed using configure.py
+* "Hardware in the Loop" testing using USB video grabber
 * Verilator testbench with PNG export of raw video data
+
+## Project structure
+
+* rtl
+    * composite\_video\_encoder.sv (the CVBS encoder itself)
+    * top\_testpic\_generator.sv (example top level module for use with a framebuffer device)
+* sim
+    * sim_top.sh (execute Verilator model which produces a png file with raw video data)
+* gowin
+    * fpga\_pong.gprj (GOWIN EDA example project for Tang Nano 9K)
+* tools
+    * configure.py (calculates filter coefficients and direct digital synthesis parameters)
+    * debugcom.py (interface class to access registers using the UART busmaster)
+    * debugcom_hil.py (produces EBU75 color stripes using all video norms, captures and checks them using USB video grabber)
+    * debugcom_imageviewer.py (transfers an image into the framebuffer for display)
+    * vlc_\*.sh (helper functions to start VLC to show the input of the USB video grabber)
+
+## Used devices to verify produced video signal
+
+* Fushicai USBTV007 Video Grabber \[EasyCAP\] 1b71:3002
+    * [Got it back in 2013 from Amazon](https://www.amazon.de/gp/product/B00EOMIDXG/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&th=1)
+* Sony Bravia KDL-55W828B
+* Commodore 1084 (PAL decoding only)
+* FLUKE PM3394A
 
 ## Used Tools
 
 * [verible-verilog-lint](https://chipsalliance.github.io/verible/)
 * [verible-verilog-format](https://chipsalliance.github.io/verible/)
-* GOWIN EDA
+* [GOWIN EDA](https://www.gowinsemi.com/en/support/download_eda/)
 * [ModelSim (FPGAs Standard Edition)](https://www.intel.com/content/www/us/en/software-kit/750666/modelsim-intel-fpgas-standard-edition-software-version-20-1-1.html)
 * [Verilator](https://www.veripool.org/verilator/)
-* VSCode with [Verilog-HDL extension](https://marketplace.visualstudio.com/items?itemName=mshr-h.VerilogHDL)
+* VS Code with [Verilog-HDL extension](https://marketplace.visualstudio.com/items?itemName=mshr-h.VerilogHDL)
+* [GTKWave](https://gtkwave.sourceforge.net/) to visualize Verilator results
+* [PyCharm](https://www.jetbrains.com/de-de/pycharm/) for the Python Code
 
 ## TODOs
 
-* Interlaced video mode
 * NTSC chroma artefacts very present at the moment
+* Saturated calculation instead of overflow
 * Reduce amount of used DSPs
 * Ask GOWIN support for help with synthesis problems
-* Fixing SECAM (might be impossible)
-* Support for RGB color space in framebuffer device
-* Reduce 32 Bit Pixel format to something more compact
+* Fixing SECAM (might be impossible due to lack of info)
+* Reduce 32 Bit Pixel format to something more compact (24 Bit)
 * UART is not working during startup with higher baud rate?
-* Add schematic for external video DAC
+* Add schematic for external video DAC circuit
+* HIL verify issues, OpenCV is not very consistent when capturing video footage
+    * VLC is as bright as a 1084 but seems to change brightness on the fly.
+    * Auto Gain Control on VLC and 1084 but not OpenCV?
+* Cleanup register map
 
 ## Motivation
 
@@ -57,19 +90,7 @@ This project aims to implement an encoder on FPGA basis to convert a digital YUV
     * Uses 38% of logic elements
     * Uses 90% of DSP units
 
-## Used devices to verify produced video signal
-
-* Fushicai USBTV007 Video Grabber \[EasyCAP\] 1b71:3002
-    * [Got it back in 2013 from Amazon](https://www.amazon.de/gp/product/B00EOMIDXG/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&th=1)
-* Sony Bravia KDL-55W828B
-* Commodore 1084 (PAL and PAL60 decoding only)
-
 ## Used Resources to create this
-
-[Parrot picture for testing](https://de.freepik.com/fotos-kostenlos/ein-bunter-papagei-mit-schwarzem-schnabel-und-gelben-augen_41630216.htm#query=papagei&position=0&from_view=keyword&track=sph&uuid=1d7397b5-0ced-4df3-80ee-074a10ad5ab8)
-
-Modelsim:
-* [Installation of modelsim on odern Linux systems](https://yoloh3.com/linux/2016/12/24/install-modelsim-in-linux/)
 
 PSRAM:
 * https://github.com/zf3/psram-tang-nano-9k.git
@@ -83,8 +104,8 @@ YUV Framebuffer formats:
 
 System Verilog:
 * https://verificationguide.com/systemverilog/systemverilog-parameters-and-define/
-* https://www.systemverilog.io/verification/styleguide/
-* https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md
+* [Style Guide for SystemVerilog Code](https://www.systemverilog.io/verification/styleguide/)
+* [lowRISC Verilog Coding Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md)
 
 IIR filter design:
 * https://vhdlwhiz.com/part-2-finite-impulse-response-fir-filters/
@@ -94,7 +115,7 @@ IIR filter design:
 * https://digitalsystemdesign.in/pipeline-implementation-of-iir-low-pass-filter/
 
 PAL/NTSC/SECAM:
-* [Elaborate document about analog video standards](https://www.yumpu.com/en/document/read/12034920/chapter-8-ntsc-pal-and-secam-overview-deetc)
+* [Very elaborate document about various analog video standards](https://www.yumpu.com/en/document/read/12034920/chapter-8-ntsc-pal-and-secam-overview-deetc)
 
 PAL:
 * [Video timing article by Martin Hinner](http://martin.hinner.info/vga/pal.html)
@@ -119,3 +140,8 @@ SECAM:
 
 DAC:
 * [R2R resistor ladder calculator](http://www.aaabbb.de/JDAC/DAC_R2R_network_calculation_en.php)
+
+Modelsim:
+* [Installation of modelsim on odern Linux systems](https://yoloh3.com/linux/2016/12/24/install-modelsim-in-linux/)
+
+[Parrot picture for testing](https://de.freepik.com/fotos-kostenlos/ein-bunter-papagei-mit-schwarzem-schnabel-und-gelben-augen_41630216.htm#query=papagei&position=0&from_view=keyword&track=sph&uuid=1d7397b5-0ced-4df3-80ee-074a10ad5ab8)

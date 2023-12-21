@@ -1,6 +1,9 @@
 {
     "files.associations": {
-        "assert.h": "c"
+        "assert.h": "c",
+        "numbers": "cpp",
+        "cstdio": "cpp",
+        "cmath": "cpp"
     },
     "editor.formatOnSave": true,
     "verilog-formatter.istyle.style": "GNU",

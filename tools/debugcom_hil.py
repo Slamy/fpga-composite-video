@@ -2,9 +2,9 @@ import subprocess
 
 import cv2
 import numpy as np
-from framebuffer import transfer_picture
 
 from debugcom import DebugCom
+from framebuffer import transfer_picture
 from v4l import video_device, capture_still_frame
 
 debugcom = DebugCom()
@@ -62,13 +62,13 @@ def grab_and_check_ebu75(videonorm):
     return frame, results
 
 
-luma_black_level = 47
-debugcom.memwrite_u8(9, luma_black_level)
-debugcom.set_video_prescalers("PAL", 110, 22, 22)
-debugcom.set_video_prescalers("NTSC", 110, 21, 21)
-debugcom.set_video_prescalers("SECAM", 110, 35, 35)
+debugcom.set_luma_black_level(47)
+debugcom.set_video_prescalers("PAL", 125, 12, 12)
+debugcom.set_video_prescalers("NTSC", 125, 14, 14)
+debugcom.set_video_prescalers("SECAM", 125, 20, 20)
 
 interlacing_mode = False
+rgb_mode = True
 clks_per_pixel = 9
 width = 256
 lines_per_field = 256
@@ -79,10 +79,12 @@ config_flags ^= 2  # QAM Chroma Bandpass
 config_flags ^= 16  # Chroma Enable
 if interlacing_mode:
     config_flags |= 32  # Interlacing Mode
+if rgb_mode:
+    config_flags |= 64
 debugcom.memwrite_u8(6, config_flags)
 
 imga = construct_ebu75()
-transfer_picture(debugcom, imga)
+transfer_picture(debugcom, imga, rgb_mode)
 
 ntsc_frame, ntsc_result = grab_and_check_ebu75("NTSC")
 pal_frame, pal_result = grab_and_check_ebu75("PAL")

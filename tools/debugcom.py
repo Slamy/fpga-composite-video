@@ -70,21 +70,20 @@ class DebugCom:
             self.memwrite_s8(0x0001, 2)
             self.memwrite_u16be(2, number_of_lines_50_hz)
             self.memwrite_u16be(4, number_of_visible_lines_50_hz)
-
-        if standard == "NTSC":
+        elif standard == "NTSC":
             self.memwrite_s8(0x0001, 1)
             self.memwrite_u16be(2, number_of_lines_60_hz)
             self.memwrite_u16be(4, number_of_visible_lines_60_hz)
-
-        if standard == "PAL":
+        elif standard == "PAL":
             self.memwrite_s8(0x0001, 0)
             self.memwrite_u16be(2, number_of_lines_50_hz)
             self.memwrite_u16be(4, number_of_visible_lines_50_hz)
-
-        if standard == "PAL60":
+        elif standard == "PAL60":
             self.memwrite_s8(0x0001, 0)
             self.memwrite_u16be(2, number_of_lines_60_hz)
             self.memwrite_u16be(4, number_of_visible_lines_60_hz)
+        else:
+            raise "Invalid argument provided!"
 
         if video_device:
             assert os.system(f"v4l2-ctl -d {video_device} -s {standard}") == 0
@@ -115,6 +114,14 @@ class DebugCom:
         print(f"Framebuffer size {width} * {height} with {clks_per_pixel} clock ticks per pixel")
 
         return height
+
+    def set_delay_lines(self, y, u, v):
+        self.memwrite_u8(0, y)
+        self.memwrite_u8(12, u)
+        self.memwrite_u8(13, v)
+
+    def set_luma_black_level(self, y):
+        self.memwrite_u8(9, y)
 
     def set_video_prescalers(self, standard, y, u, v):
         if standard == "PAL":

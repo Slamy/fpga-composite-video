@@ -7,6 +7,7 @@
     <FileList>
         <File path="src/gowin_rpll/gowin_rpll.v" type="file.verilog" enable="1"/>
         <File path="src/psram_memory_interface_hs_v2/psram_memory_interface_hs_v2.v" type="file.verilog" enable="1"/>
+        <File path="../rtl/RGB2YCbCr.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/burst_bus_arbiter.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/burst_writer.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/coefficients.svh" type="file.verilog" enable="1"/>
@@ -30,9 +31,9 @@
         <File path="../rtl/secam_ampl.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/secam_encoder.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/sinus.sv" type="file.verilog" enable="1"/>
-        <File path="../rtl/top_testpic_generator.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/top_dactest_frequency.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/top_dactest_sawtooth.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/top_testpic_generator.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/uart_busmaster.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/uart_rx.v" type="file.verilog" enable="1"/>
         <File path="../rtl/uart_tx.v" type="file.verilog" enable="1"/>

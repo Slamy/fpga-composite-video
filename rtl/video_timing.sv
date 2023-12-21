@@ -24,7 +24,7 @@ module video_timing (
     output bit [12:0] video_x,
 
     output bit visible_line,
-    output bit visible_window,
+    output visible_window,
     output bit even_field
 );
     // Internal bits for the phase accumulator
@@ -97,14 +97,22 @@ module video_timing (
     bit first_half_long_sync;
     bit second_half_long_sync;
     bit timing_line;
+    bit visible_window_q = 0;
+    bit visible_window_d;
+    always_ff @(posedge clk) begin
+        newframe <= (video_y == 0 && video_x == 0);
+        newline <= (video_x == 0);
+        visible_window_q <= visible_window_d;
+    end
+
+    assign visible_window = visible_window_q;
 
     always_comb begin
-        newframe = (video_y == 0 && video_x == 0);
-        newline = (video_x == 0);
+
         sync_next = 0;
         startburst = 0;
         visible_line = 0;
-        visible_window = 0;
+        visible_window_d = 0;
         newpixel = !pixel_clock_accu_highest && pixel_clock_accu[PixelPhaseAccu-1];
 
         first_half_long_sync = 0;
@@ -155,7 +163,8 @@ module video_timing (
             // 256 visible lines starting at line 38
             if (video_y >= VisibleStartY && video_y < (VisibleStartY + v_active)) begin
                 visible_line = 1;
-                if (video_x >= ActiveWindowStart && video_x <= ActiveWindowStop) visible_window = 1;
+                if (video_x >= ActiveWindowStart && video_x <= ActiveWindowStop)
+                    visible_window_d = 1;
             end
             if (video_x < NormalSync) sync_next = 1;
             if (video_x == BurstStart && video_y > 7) startburst = 1;

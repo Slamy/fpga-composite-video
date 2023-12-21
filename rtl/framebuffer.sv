@@ -25,6 +25,7 @@ module framebuffer (
     bit [20:0] start_addr_odd_field = 0;
     bit [6:0] windows_v_start = 30;
     bit debug_line_mode = 0;
+    bit rgb_mode = 0;
     // Register Map ------
 
     bit [8:0] windows_v_start_9bit;
@@ -68,6 +69,7 @@ module framebuffer (
             case (dbus.addr[7:0])
                 6: begin
                     debug_line_mode <= dbus.write_data[2];
+                    rgb_mode <= dbus.write_data[6];
                 end
                 default: ;
             endcase
@@ -91,6 +93,27 @@ module framebuffer (
 
     bit [31:0] pixel_data;
 
+    bit [7:0] R;
+    bit [7:0] G;
+    bit [7:0] B;
+    bit [7:0] Y;
+    bit signed [7:0] Cb;
+    bit signed [7:0] Cr;
+
+    bit [7:0] rgbconv_Y;
+    bit signed [7:0] rgbconv_Cb;
+    bit signed [7:0] rgbconv_Cr;
+
+    RGB2YCbCr rgb_conv (
+        .clk,
+        .R,
+        .G,
+        .B,
+        .Y (rgbconv_Y),
+        .Cb(rgbconv_Cb),
+        .Cr(rgbconv_Cr)
+    );
+
     always_comb begin
         bus.addr = read_addr;
         bus.data_mask = 0;
@@ -98,23 +121,31 @@ module framebuffer (
         bus.cmd_en = 0;
         bus.wr_data = 0;
 
-        luma = 0;
-        yuv_u = 0;
-        yuv_v = 0;
-
         case (fifo_read_pos_q2[0])
             1'b0: pixel_data = fifo_read_word[63:32];
             1'b1: pixel_data = fifo_read_word[31:0];
             default: ;
         endcase
 
-        luma  = pixel_data[23:16];
-        yuv_u = pixel_data[15:8];
-        yuv_v = pixel_data[7:0];
+        if (rgb_mode) begin
+            luma  = rgbconv_Y;
+            yuv_u = rgbconv_Cb;
+            yuv_v = rgbconv_Cr;
+        end else begin
+            luma  = pixel_data[23:16];
+            yuv_u = pixel_data[15:8];
+            yuv_v = pixel_data[7:0];
+        end
 
         // Don't read during newline flag.
         // Address not yet at required value!
         if (fifo_free_entries >= 4 && !newline) bus.cmd_en = 1;
+    end
+
+    always_ff @(posedge clk) begin
+        R <= pixel_data[23:16];
+        G <= pixel_data[15:8];
+        B <= pixel_data[7:0];
     end
 
     always_ff @(posedge clk) begin

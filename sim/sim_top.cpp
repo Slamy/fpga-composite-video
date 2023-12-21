@@ -122,7 +122,7 @@ int main(int argc, char **argv)
 
         val1 <<= 7;
         val1 >>= 7;
-        if (dut.rootp->top_testpic_generator__DOT__visible_window)
+        if (dut.rootp->top_testpic_generator__DOT__video_timing0__DOT__visible_window_q)
           fprintf(f, "%d %d %d\n", val1, val2, val3);
 
         // fprintf(f, "%d\n", val1);
