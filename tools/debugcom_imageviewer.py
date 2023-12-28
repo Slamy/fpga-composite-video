@@ -3,7 +3,7 @@ import cv2
 from debugcom import DebugCom
 from framebuffer import transfer_picture
 
-videonorm = "NTSC"
+videonorm = "PAL"
 interlacing_mode = True
 rgb_mode = True
 width = 768 + 16
@@ -12,15 +12,14 @@ debugcom = DebugCom()
 debugcom.configure_video_standard(videonorm)
 debugcom.set_luma_black_level(47)
 if rgb_mode:
-    debugcom.set_video_prescalers("PAL", 160, 11, 11)
-    debugcom.set_video_prescalers("NTSC", 160, 14, 14)
-    debugcom.set_video_prescalers("SECAM", 160, 20, 20)
+    debugcom.set_video_prescalers("PAL", 125, 12, 12)
+    debugcom.set_video_prescalers("NTSC", 125, 12, 12)
+    debugcom.set_video_prescalers("SECAM", 125, 19, 19)
 else:
     debugcom.set_video_prescalers("PAL", 125, 12, 12)
-    debugcom.set_video_prescalers("NTSC", 125, 14, 14)
-    debugcom.set_video_prescalers("SECAM", 125, 20, 20)
+    debugcom.set_video_prescalers("NTSC", 125, 12, 12)
+    debugcom.set_video_prescalers("SECAM", 125, 19, 19)
 
-#exit()
 if videonorm == "NTSC":
     lines_per_field = 200 + 15 # for 60 Hz (NTSC)
 else:

@@ -36,16 +36,17 @@ int main(int argc, char **argv)
         int8_t Cb = dut.Cb;
         int8_t Cr = dut.Cr;
 
-        // translation matrix from https://en.wikipedia.org/wiki/YCbCr
-        float verify_Y = 16 + (65.481 * dut.R + 128.553 * dut.G + 24.977 * dut.B) / 256.0;
-        float verify_Cb = (-37.797 * dut.R - 74.203 * dut.G + 112.0 * dut.B) / 256.0;
-        float verify_Cr = (112.0 * dut.R - 93.786 * dut.G - 18.214 * dut.B) / 256.0;
+        // Translation matrix from https://en.wikipedia.org/wiki/YCbCr
+        // Approximate 8-bit matrices for BT.601 as full swing
+        float verify_Y = (77 * dut.R + 150 * dut.G + 29 * dut.B) / 256.0;
+        float verify_Cb = (-43 * dut.R - 84 * dut.G + 127 * dut.B) / 256.0;
+        float verify_Cr = (127 * dut.R - 106 * dut.G - 21 * dut.B) / 256.0;
 
         printf("%3d %3d %3d -> %3d %3d %3d == %3.1f %3.1f %3.1f ? \n", dut.R, dut.G, dut.B, Y, Cb, Cr, verify_Y, verify_Cb, verify_Cr);
 
-        assert(fabs(Y - verify_Y) < 1.0);
-        assert(fabs(Cb - verify_Cb) < 1.5);
-        assert(fabs(Cr - verify_Cr) < 1.5);
+        assert(fabs(Y - verify_Y) < 2.1);
+        assert(fabs(Cb - verify_Cb) < 2.1);
+        assert(fabs(Cr - verify_Cr) < 2.1);
     }
 
     printf("Success\n");

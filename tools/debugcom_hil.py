@@ -64,8 +64,8 @@ def grab_and_check_ebu75(videonorm):
 
 debugcom.set_luma_black_level(47)
 debugcom.set_video_prescalers("PAL", 125, 12, 12)
-debugcom.set_video_prescalers("NTSC", 125, 14, 14)
-debugcom.set_video_prescalers("SECAM", 125, 20, 20)
+debugcom.set_video_prescalers("NTSC", 125, 12, 12)
+debugcom.set_video_prescalers("SECAM", 125, 19, 19)
 
 interlacing_mode = False
 rgb_mode = True
