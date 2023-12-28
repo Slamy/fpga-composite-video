@@ -18,7 +18,6 @@ module top_testpic_generator (
     inout  [15:0] IO_psram_dq,
     output [ 1:0] O_psram_reset_n,
     output [ 1:0] O_psram_cs_n
-
 )  /* synthesis syn_netlist_hierarchy=0 */;
 
     wire video_overflow;

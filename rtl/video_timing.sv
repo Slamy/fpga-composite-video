@@ -54,7 +54,9 @@ module video_timing (
     localparam bit [12:0] BurstStart = 13'(integer'(5.6 / `CLK_PERIOD_USEC));  // 5.6 usec
 
     localparam bit [12:0] ActiveWindowStart = NormalSync + BackPorch;
-    localparam bit [12:0] ActiveWindowStop = LineLength - 13'(integer'(5 / `CLK_PERIOD_USEC));  // 64 usec
+    // TODO +4 is used here because the resolution of PixelPhaseAccu is too limited and
+    // we want to have an equal width for all "pixels". Need to find a better solution.
+    localparam bit [12:0] ActiveWindowStop = LineLength - 13'(integer'(5 / `CLK_PERIOD_USEC))+4;  // 64 usec
 
     initial begin
         // pixel_counter_increment * ticks_per_active_window must about reach a
@@ -89,7 +91,6 @@ module video_timing (
 
         sync <= sync_next;
         pixel_clock_accu_highest <= pixel_clock_accu[PixelPhaseAccu-1];
-
     end
 
     // Calculate sync signal and burst position

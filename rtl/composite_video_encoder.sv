@@ -42,15 +42,15 @@ module composite_video_encoder (
 
     initial begin
         video_overflow  = 0;
-        y_scaler_mem[0] = 142;
-        y_scaler_mem[1] = 142;
-        y_scaler_mem[2] = 142;
-        u_scaler_mem[0] = 15;
-        u_scaler_mem[1] = 15;
-        u_scaler_mem[2] = 35;
-        v_scaler_mem[0] = 15;
-        v_scaler_mem[1] = 15;
-        v_scaler_mem[2] = 35;
+        y_scaler_mem[0] = `CONFIG_PAL_Y_SCALER;
+        y_scaler_mem[1] = `CONFIG_NTSC_Y_SCALER;
+        y_scaler_mem[2] = `CONFIG_SECAM_Y_SCALER;
+        u_scaler_mem[0] = `CONFIG_PAL_U_SCALER;
+        u_scaler_mem[1] = `CONFIG_NTSC_U_SCALER;
+        u_scaler_mem[2] = `CONFIG_SECAM_U_SCALER;
+        v_scaler_mem[0] = `CONFIG_PAL_V_SCALER;
+        v_scaler_mem[1] = `CONFIG_NTSC_V_SCALER;
+        v_scaler_mem[2] = `CONFIG_SECAM_V_SCALER;
     end
 
     bit [1:0] video_standard_adr;
