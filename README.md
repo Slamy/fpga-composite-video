@@ -25,6 +25,47 @@ This project aims to implement an encoder on FPGA basis to convert a digital YUV
 * "Hardware in the Loop" testing using USB video grabber
 * Verilator testbench with PNG export of raw video data
 
+## Example results
+
+### Picture of a parrot
+
+These were recorded using [this USB videograbber](https://www.amazon.de/gp/product/B00EOMIDXG/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&th=1) and OpenCV.
+
+#### Reference 
+
+[This picture of a parrot](https://de.freepik.com/fotos-kostenlos/ein-bunter-papagei-mit-schwarzem-schnabel-und-gelben-augen_41630216.htm#query=papagei&position=0&from_view=keyword&track=sph&uuid=1d7397b5-0ced-4df3-80ee-074a10ad5ab8) was cropped to fit into 4:3 and is then resized by the Python script to fit into the framebuffer.
+![Parrot reference picture](doc/parrot.jpg)
+
+#### PAL
+PAL is the clear winner here. Reproduced in interlacing mode at a resolution of 720 x 576.
+It looks a little bit too bright though.
+
+![Parrot via PAL](doc/parrot_pal.png)
+
+#### NTSC
+
+NTSC should show similar results to PAL but sadly doesn't. The color carrier is clearly visible. The used resolution here is 720 x 480. Also OpenCV doesn't scale the output to 4:3 and instead uses square pixels. This is more noticable with NTSC as with PAL where it is the opposite problem.
+
+![Parrot via NTSC](doc/parrot_ntsc.png)
+
+#### SECAM
+
+SECAM is the problem child of this project. The preemphasis (Video and RF) doesn't work correctly, causing some horizontal artefacts in form of the popular "SECAM fire".
+
+![Parrot via SECAM](doc/parrot_secam.png)
+
+### EBU75 and EBU100
+
+From top to bottom we have EBU 75% color bars for NTSC, PAL and SECAM.
+
+![EBU75 color bards](doc/ebu75.png)
+
+This picture clearly shows the problems with SECAM as not the color itself is transmitted but instead the color transition. The preemphasis doesn't fit the deemphasis.
+
+![EBU100](doc/ebu100.png)
+
+Here EBU 100% to check for edge case problems.
+
 ## Project structure
 
 * rtl
@@ -37,7 +78,8 @@ This project aims to implement an encoder on FPGA basis to convert a digital YUV
 * tools
     * configure.py (calculates filter coefficients and direct digital synthesis parameters)
     * debugcom.py (interface class to access registers using the UART busmaster)
-    * debugcom_hil.py (produces EBU75 color stripes using all video norms, captures and checks them using USB video grabber)
+    * debugcom_hil_ebu75.py (produces EBU75 color stripes using all video norms, captures and checks them using USB video grabber)
+    * debugcom_hil_parrot.py (records a reference picture for comparsion)
     * debugcom_imageviewer.py (transfers an image into the framebuffer for display)
     * vlc_\*.sh (helper functions to start VLC to show the input of the USB video grabber)
 
@@ -63,7 +105,8 @@ This project aims to implement an encoder on FPGA basis to convert a digital YUV
 ## TODOs
 
 * NTSC chroma artefacts very present at the moment
-* Saturated calculation instead of overflow
+* There might be a gamma correction missing
+* Saturated artithmetics instead of overflow
 * Reduce amount of used DSPs
 * Ask GOWIN support for help with synthesis problems
 * Fixing SECAM (might be impossible due to lack of info)
@@ -137,11 +180,11 @@ SECAM:
 * [Very old article on the inner workings and formulas](http://web.archive.org/web/20160502235024/http://www.pembers.freeserve.co.uk/World-TV-Standards/Colour-Standards.html)
 * [Test pictures and their signaling](http://web.archive.org/web/20160409090425/http://www.pembers.freeserve.co.uk/Test-Cards/Test-Card-Technical.html#Bars)
 
-
 DAC:
 * [R2R resistor ladder calculator](http://www.aaabbb.de/JDAC/DAC_R2R_network_calculation_en.php)
 
 Modelsim:
 * [Installation of modelsim on odern Linux systems](https://yoloh3.com/linux/2016/12/24/install-modelsim-in-linux/)
 
-[Parrot picture for testing](https://de.freepik.com/fotos-kostenlos/ein-bunter-papagei-mit-schwarzem-schnabel-und-gelben-augen_41630216.htm#query=papagei&position=0&from_view=keyword&track=sph&uuid=1d7397b5-0ced-4df3-80ee-074a10ad5ab8)
+[Colorful parrot picture for testing](https://de.freepik.com/fotos-kostenlos/ein-bunter-papagei-mit-schwarzem-schnabel-und-gelben-augen_41630216.htm#query=papagei&position=0&from_view=keyword&track=sph&uuid=1d7397b5-0ced-4df3-80ee-074a10ad5ab8)
+which is published under free license and can therefore be packaged with this project

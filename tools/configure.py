@@ -20,9 +20,11 @@ frame_time = line_length * 262 * system_clock_period
 pal_burst_amplitude = 11
 pal_burst_u = round(pal_burst_amplitude * math.sin(math.radians(-45)))
 pal_burst_v = round(pal_burst_amplitude * math.cos(math.radians(-45)))
-ntsc_burst_amplitude = 18
-ntsc_burst_v = -round(ntsc_burst_amplitude * math.sin(math.radians(-45 + 33)))
-ntsc_burst_u = -round(ntsc_burst_amplitude * math.cos(math.radians(-45 + 33)))
+ntsc_burst_amplitude = 15
+ntsc_burst_phase = -45 + 33 - 5
+
+ntsc_burst_v = -round(ntsc_burst_amplitude * math.sin(math.radians(ntsc_burst_phase)))
+ntsc_burst_u = -round(ntsc_burst_amplitude * math.cos(math.radians(ntsc_burst_phase)))
 
 
 def sine_frequency_to_increment(freq):

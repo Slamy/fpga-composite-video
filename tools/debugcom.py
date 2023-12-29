@@ -120,10 +120,22 @@ class DebugCom:
         self.memwrite_u8(12, u)
         self.memwrite_u8(13, v)
 
+    def set_ntsc_burst_uv(self, u, v):
+        self.memwrite_s8(7, u)
+        self.memwrite_s8(8, v)
+        print(f"Set NTSC Burst {u} {v}")
+
+    def set_ntsc_burst(self, amplitude, phase):
+        v = -round(amplitude * math.sin(math.radians(phase)))
+        u = -round(amplitude * math.cos(math.radians(phase)))
+        self.set_ntsc_burst_uv(u, v)
+
     def set_luma_black_level(self, y):
         self.memwrite_u8(9, y)
 
     def set_video_prescalers(self, standard, y, u, v):
+        print(f"Set {standard} scalers to {y} {u} {v}")
+
         if standard == "PAL":
             self.memwrite_u8(0x0200 + 4 * 0 + 0, y)
             self.memwrite_u8(0x0200 + 4 * 1 + 0, u)

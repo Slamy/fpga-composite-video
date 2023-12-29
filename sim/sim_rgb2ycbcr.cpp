@@ -16,11 +16,13 @@ int main(int argc, char **argv)
 
     printf("Checking edge cases of RGB to YCbCr conversion...\n");
 
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < 16; i++)
     {
-        dut.R = i & 1 ? 255 : 0;
-        dut.G = i & 2 ? 255 : 0;
-        dut.B = i & 4 ? 255 : 0;
+        uint8_t maxval = i & 8 ? 255 : 191;
+
+        dut.R = i & 1 ? maxval : 0;
+        dut.G = i & 2 ? maxval : 0;
+        dut.B = i & 4 ? maxval : 0;
 
         dut.clk = 1;
         dut.eval();

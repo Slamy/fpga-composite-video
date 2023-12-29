@@ -12,8 +12,9 @@ def yuv_real2raw(y, u, v):
 
 index = 0
 
-print(rgb2yuv(1, 0, 0))
-print(rgb2yuv(0.8, 0.8, 0.2))
+print(rgb2yuv(0.75, 0, 0))
+print(color.rgb2ycbcr(191, 0, 0))
+
 print(yuv2rgb(0.299, -0.14740699999999998, 0.614777))
 
 r, g, b = yuv2rgb(0.66, -0.327, 0.073)

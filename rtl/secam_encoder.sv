@@ -80,9 +80,9 @@ module secam_encoder (
 
     always_ff @(posedge clk) begin
         if (even_line) begin
-            phase_increment <=  `SECAM_CHROMA_DB_DDS_INCREMENT + (51'(carrier_period_emphasis2)<<<38);
+            phase_increment <=  `SECAM_CHROMA_DB_DDS_INCREMENT + (51'(carrier_period_emphasis2)<<<39);
         end else begin
-            phase_increment <=  `SECAM_CHROMA_DR_DDS_INCREMENT - (51'(carrier_period_emphasis2)<<<38);
+            phase_increment <=  `SECAM_CHROMA_DR_DDS_INCREMENT - (51'(carrier_period_emphasis2)<<<39);
         end
     end
 

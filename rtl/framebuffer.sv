@@ -142,10 +142,14 @@ module framebuffer (
         if (fifo_free_entries >= 4 && !newline) bus.cmd_en = 1;
     end
 
+    bit restart_line = 0;
     always_ff @(posedge clk) begin
         R <= pixel_data[23:16];
         G <= pixel_data[15:8];
         B <= pixel_data[7:0];
+
+        restart_line <= newline && video_y >= windows_v_start_9bit &&
+                        video_y < (windows_v_start_9bit + height);
     end
 
     always_ff @(posedge clk) begin
@@ -156,8 +160,7 @@ module framebuffer (
             if (even_field) line_addr <= start_addr_even_field;
             else line_addr <= start_addr_odd_field;
 
-        end else if (newline && video_y >= windows_v_start_9bit &&
-                        video_y < (windows_v_start_9bit + height)) begin
+        end else if (restart_line) begin
             // Restart reading process for a new line
             pixel_count <= 0;
             pixel_x <= 0;
