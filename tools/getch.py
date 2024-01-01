@@ -30,6 +30,7 @@ class _GetchUnix:
 
 class _GetchWindows:
     def __init__(self):
+        import msvcrt
         pass
 
     def __call__(self):

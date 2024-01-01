@@ -1,8 +1,8 @@
 import math
 
-from debugcom_hil import construct_ebu75
-
+import color
 from debugcom import DebugCom
+from debugcom_hil_ebu75 import construct_ebu75, construct_ebu
 from framebuffer import transfer_picture
 from getch import getch
 
@@ -92,11 +92,12 @@ def interactive_configurator():
         if char == 'n':
             debugcom.configure_video_standard("NTSC")
 
-
 debugcom.set_luma_black_level(47)
-debugcom.set_video_prescalers("PAL", 125, 12, 12)
-debugcom.set_video_prescalers("NTSC", 125, 12, 12)
-debugcom.set_video_prescalers("SECAM", 125, 19, 19)
+_, u_scale, v_scale = color.ypbpr2yuv(0, 12, 12)
+debugcom.set_video_prescalers("PAL", 125, round(u_scale), round(v_scale))
+debugcom.set_video_prescalers("NTSC", 125, round(u_scale), round(v_scale))
+_, u_scale, v_scale = color.ypbpr2yuv(0, 11, 10)
+debugcom.set_video_prescalers("SECAM", 125, round(u_scale), round(v_scale))
 
 interlacing_mode = False
 rgb_mode = False
@@ -105,7 +106,7 @@ width = 256
 lines_per_field = 256
 height = debugcom.configure_framebuffer(width, lines_per_field, interlacing_mode, clks_per_pixel)
 
-debugcom.configure_video_standard("PAL")
+debugcom.configure_video_standard("SECAM")
 imga = construct_ebu75()
 transfer_picture(debugcom, imga, rgb_mode)
 interactive_configurator()

@@ -3,8 +3,7 @@ import time
 
 import numpy as np
 
-import color
-from color import yuv_real2raw, rgb2yuv
+from color import rgb2ycbcr, ypbpr2yuv
 from debugcom import DebugCom
 
 
@@ -15,20 +14,22 @@ def transfer_picture(debugcom: DebugCom, testpic, rgb_mode):
     rawdata = []
 
     if rgb_mode:
-        for color in testpic:
-            raw = [0, color[2], color[1], color[0]]
+        for pixel in testpic:
+            raw = [0, pixel[2], pixel[1], pixel[0]]
             rawdata.extend(raw)
     else:
-        for color in testpic:
-            y, u, v = rgb2yuv(color[2] / 255.0, color[1] / 255.0, color[0] / 255.0)
-            # Apply some scaling to move YUV more closer to YCbCr
-            # TODO is this the right location to do so?
-            u *= 1.5
-            v *= 1.5
-            assert -1 < u < 1
-            assert -1 < v < 1
+        for pixel in testpic:
+            y_raw, u_raw, v_raw = rgb2ycbcr(pixel[2], pixel[1], pixel[0])
 
-            y_raw, u_raw, v_raw = yuv_real2raw(y, u, v)
+            # Limit to range of two complements
+            if u_raw == 128:
+                u_raw = 127
+            if v_raw == 128:
+                v_raw = 127
+
+            assert y_raw <= 255
+            assert -127 <= u_raw <= 127, f"u_raw {u_raw}"
+            assert -127 <= v_raw <= 127, f"v_raw {v_raw}"
             raw = [0, y_raw, u_raw & 0xff, v_raw & 0xff]
             rawdata.extend(raw)
 
@@ -54,10 +55,10 @@ def framebuffer_easy_conf(debugcom, videonorm, interlacing_mode, rgb_mode, width
     debugcom.configure_video_standard(videonorm)
     debugcom.set_luma_black_level(47)
     if rgb_mode:
-        _, u_scale, v_scale = color.ypbpr2yuv(0, 12, 12)
+        _, u_scale, v_scale = ypbpr2yuv(0, 12, 12)
         debugcom.set_video_prescalers("PAL", 125, round(u_scale), round(v_scale))
         debugcom.set_video_prescalers("NTSC", 125, round(u_scale), round(v_scale))
-        _, u_scale, v_scale = color.ypbpr2yuv(0, 10, 10)
+        _, u_scale, v_scale = ypbpr2yuv(0, 11, 10)
         debugcom.set_video_prescalers("SECAM", 125, round(u_scale), round(v_scale))
     else:
         debugcom.set_video_prescalers("PAL", 125, 13, 13)

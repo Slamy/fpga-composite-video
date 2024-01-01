@@ -72,9 +72,23 @@ module secam_encoder (
 
     always_ff @(posedge clk) begin
         if (even_line) begin
-            carrier_period_emphasis2 <= carrier_period_filtered + 3*(carrier_period_filtered-carrier_period_emphasis);
+            // Db or U
+            // *3 gives faster blue than *2.5
+            carrier_period_emphasis2 <= carrier_period_filtered + 3*(carrier_period_filtered-carrier_period_emphasis); // *3
+            //carrier_period_emphasis2 <= carrier_period_filtered + ((carrier_period_filtered-carrier_period_emphasis)<<<1) + ((carrier_period_filtered-carrier_period_emphasis)>>>1); // *2.5
         end else begin
-            carrier_period_emphasis2 <= carrier_period_filtered + 2*(carrier_period_filtered-carrier_period_emphasis);
+            // Dr or V
+            // *2 gives better results than *2.5.
+            // *2.5 gives too much overshoot on red and purple
+            // and one additional overshoot on cyan.
+            // On the other hand red and purple seemed to be very strong compared
+            // to PAL and NTSC. Applying scaling of 10 instead of 11 using scaler units
+            // shows good results for 2.5.
+            // going back to 2 shows low pass behaviour on purple
+            //carrier_period_emphasis2 <= carrier_period_filtered + ((carrier_period_filtered-carrier_period_emphasis)) + ((carrier_period_filtered-carrier_period_emphasis)>>>1); // *1.5
+            //carrier_period_emphasis2 <= carrier_period_filtered + ((carrier_period_filtered-carrier_period_emphasis)<<<1); //*2
+            carrier_period_emphasis2 <= carrier_period_filtered + ((carrier_period_filtered-carrier_period_emphasis)<<<1) + ((carrier_period_filtered-carrier_period_emphasis)>>>1); // *2.5
+
         end
     end
 

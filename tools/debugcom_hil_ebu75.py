@@ -76,11 +76,11 @@ if __name__ == '__main__':
     _, u_scale, v_scale = color.ypbpr2yuv(0, 12, 12)
     debugcom.set_video_prescalers("PAL", 125, round(u_scale), round(v_scale))
     debugcom.set_video_prescalers("NTSC", 125, round(u_scale), round(v_scale))
-    _, u_scale, v_scale = color.ypbpr2yuv(0, 11, 11)
+    _, u_scale, v_scale = color.ypbpr2yuv(0, 11, 10)
     debugcom.set_video_prescalers("SECAM", 125, round(u_scale), round(v_scale))
 
     interlacing_mode = False
-    rgb_mode = True
+    rgb_mode = False
     clks_per_pixel = 9
     width = 256
     lines_per_field = 256

@@ -130,7 +130,8 @@ Here EBU 100% to check for edge case problems.
 * Proven in use on Tang Nano 9K (based on GW1NR-9)
     * 48 MHz sample rate
     * GOWIN EDA used as Synthesis tool
-    * Uses 38% of logic elements
+    * Uses 41% of logic elements for whole test picture generator project
+    * Should take only 20% of logic elements as about the half is spent on the PSRAM controller and the debugging interface
     * Uses 90% of DSP units
 
 ## Used Resources to create this

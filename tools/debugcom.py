@@ -116,9 +116,11 @@ class DebugCom:
         return height
 
     def set_delay_lines(self, y, u, v):
-        self.memwrite_u8(0, y)
-        self.memwrite_u8(12, u)
-        self.memwrite_u8(13, v)
+        # It should be unsigned instead of signed...
+        # But having it signed allows a fast wrap around to check the maximum
+        self.memwrite_s8(0, y)
+        self.memwrite_s8(12, u)
+        self.memwrite_s8(13, v)
 
     def set_ntsc_burst_uv(self, u, v):
         self.memwrite_s8(7, u)

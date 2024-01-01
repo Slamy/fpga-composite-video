@@ -96,7 +96,8 @@ def generate_pal_luma_filter():
 def generate_secam_chroma_lowpass_filter():
     b_after_dot = 11
     a_after_dot = 8
-    sos = signal.bessel(1, 1.2e6, 'lp', fs=system_clock, output='sos')
+    # whether 3.0 MHz or 1.8MHz shows no difference
+    sos = signal.bessel(1, 1.8e6, 'lp', fs=system_clock, output='sos')
     b, a = signal.sos2tf(sos)
     fpfilter = FpFilter(b, a, b_after_dot, a_after_dot)
     print_filter("SECAM_CHROMA_LOWPASS", fpfilter)
@@ -121,14 +122,24 @@ def generate_secam_preemphasis():
 
 
 def frequency_to_amplitude(x):
+    center = 4.286
     x = x / 1000000
-    if x < 4.286:
-        y = 8 * (4.286 - x) * (4.286 - x)
+    if x < center:
+        # 120 gives a more stable purple than 60
+        y = 120 * (center - x) * (center - x)
     else:
-        y = 4 * (4.286 - x) * (4.286 - x)
-    y = y * 15 + 5
+    	# 60 gives better results than 90
+    	# 90 gives a negative luma dent in blue
+        y = 60 * (center - x) * (center - x)
+
+    y = y + 5
+
     if y > 31:
         y = 31
+    # y=10
+    # assert y>0
+    assert abs(y) <= 31, f"{y}"
+
     return y
 
 
@@ -174,23 +185,29 @@ def generate_sine_lut():
                 f.write(f"{value:02x}\n")
 
 
-with open("../rtl/coefficients.svh", "w") as file:
-    generate_sine_lut()
-    generate_chroma_filter()
-    generate_pal_luma_filter()
-    generate_secam_amplitude_lowpass_filter()
-    generate_secam_chroma_lowpass_filter()
-    generate_secam_preemphasis()
-    build_frequency_to_amplitude_lut()
+def generate():
+    global file
+    with open("../rtl/coefficients.svh", "w") as file:
+        generate_sine_lut()
+        generate_chroma_filter()
+        generate_pal_luma_filter()
+        generate_secam_amplitude_lowpass_filter()
+        generate_secam_chroma_lowpass_filter()
+        generate_secam_preemphasis()
+        build_frequency_to_amplitude_lut()
 
-    file.write(f"`define CLK_PERIOD_USEC {1e6 / system_clock}  // .8\n\n")
+        file.write(f"`define CLK_PERIOD_USEC {1e6 / system_clock}  // .8\n\n")
 
-    file.write(f"`define SECAM_CHROMA_DB_DDS_INCREMENT 51'd{phase_increment_db}\n")
-    file.write(f"`define SECAM_CHROMA_DR_DDS_INCREMENT 51'd{phase_increment_dr}\n")
-    file.write(f"`define PAL_CHROMA_DDS_INCREMENT 51'd{phase_increment_pal}\n")
-    file.write(f"`define NTSC_CHROMA_DDS_INCREMENT 51'd{phase_increment_ntsc}\n\n")
+        file.write(f"`define SECAM_CHROMA_DB_DDS_INCREMENT 51'd{phase_increment_db}\n")
+        file.write(f"`define SECAM_CHROMA_DR_DDS_INCREMENT 51'd{phase_increment_dr}\n")
+        file.write(f"`define PAL_CHROMA_DDS_INCREMENT 51'd{phase_increment_pal}\n")
+        file.write(f"`define NTSC_CHROMA_DDS_INCREMENT 51'd{phase_increment_ntsc}\n\n")
 
-    file.write(f"`define PAL_BURST_U {pal_burst_u}\n")
-    file.write(f"`define PAL_BURST_V {pal_burst_v}\n")
-    file.write(f"`define NTSC_BURST_U {ntsc_burst_u}\n")
-    file.write(f"`define NTSC_BURST_V {ntsc_burst_v}\n\n")
+        file.write(f"`define PAL_BURST_U {pal_burst_u}\n")
+        file.write(f"`define PAL_BURST_V {pal_burst_v}\n")
+        file.write(f"`define NTSC_BURST_U {ntsc_burst_u}\n")
+        file.write(f"`define NTSC_BURST_V {ntsc_burst_v}\n\n")
+
+
+if __name__ == '__main__':
+    generate()
