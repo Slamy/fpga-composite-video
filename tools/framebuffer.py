@@ -58,12 +58,12 @@ def framebuffer_easy_conf(debugcom, videonorm, interlacing_mode, rgb_mode, width
         _, u_scale, v_scale = ypbpr2yuv(0, 12, 12)
         debugcom.set_video_prescalers("PAL", 125, round(u_scale), round(v_scale))
         debugcom.set_video_prescalers("NTSC", 125, round(u_scale), round(v_scale))
-        _, u_scale, v_scale = ypbpr2yuv(0, 11, 10)
+        _, u_scale, v_scale = ypbpr2yuv(0, 10, 10)
         debugcom.set_video_prescalers("SECAM", 125, round(u_scale), round(v_scale))
     else:
-        debugcom.set_video_prescalers("PAL", 125, 13, 13)
-        debugcom.set_video_prescalers("NTSC", 125, 13, 13)
-        debugcom.set_video_prescalers("SECAM", 125, 19, 19)
+        debugcom.set_video_prescalers("PAL", 125, 12, 12)
+        debugcom.set_video_prescalers("NTSC", 125, 12, 12)
+        debugcom.set_video_prescalers("SECAM", 125, 10, 10)
 
     if videonorm == "NTSC":
         lines_per_field = 200 + 15  # for 60 Hz (NTSC)

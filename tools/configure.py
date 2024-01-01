@@ -97,7 +97,8 @@ def generate_secam_chroma_lowpass_filter():
     b_after_dot = 11
     a_after_dot = 8
     # whether 3.0 MHz or 1.8MHz shows no difference
-    sos = signal.bessel(1, 1.8e6, 'lp', fs=system_clock, output='sos')
+    # but having low frequency here might help reducing high preemphasis swing
+    sos = signal.bessel(1, 1.3e6, 'lp', fs=system_clock, output='sos')
     b, a = signal.sos2tf(sos)
     fpfilter = FpFilter(b, a, b_after_dot, a_after_dot)
     print_filter("SECAM_CHROMA_LOWPASS", fpfilter)
