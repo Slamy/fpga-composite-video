@@ -28,18 +28,21 @@ module framebuffer (
     bit rgb_mode = 0;
     // Register Map ------
 
-    bit [8:0] windows_v_start_9bit;
+    bit [8:0] windows_v_start_9bit_d;
+    bit [8:0] windows_v_start_9bit_q;
 
     always_comb begin
-        windows_v_start_9bit = {2'b0, windows_v_start};
+        windows_v_start_9bit_d = {2'b0, windows_v_start};
         // This here might be debatable. On the one hand, the even field is
         // the only one in non interlaced mode, so I would assume that it is
         // the "upper" frame. But this is not the case as the odd one is on
         // top. We move the odd field one line down to fix that.
-        if (!even_field) windows_v_start_9bit = windows_v_start_9bit + 1;
+        if (!even_field) windows_v_start_9bit_d = windows_v_start_9bit_d + 1;
     end
 
     always_ff @(posedge clk) begin
+        windows_v_start_9bit_q <= windows_v_start_9bit_d;
+
         if (dbus.addr[15:8] == 8'h03 && dbus.write_enable) begin
             case (dbus.addr[7:0])
                 0:  width[9:8] <= dbus.write_data[1:0];
@@ -148,8 +151,8 @@ module framebuffer (
         G <= pixel_data[15:8];
         B <= pixel_data[7:0];
 
-        restart_line <= newline && video_y >= windows_v_start_9bit &&
-                        video_y < (windows_v_start_9bit + height);
+        restart_line <= newline && video_y >= windows_v_start_9bit_q &&
+                        video_y < (windows_v_start_9bit_q + height);
     end
 
     always_ff @(posedge clk) begin
@@ -183,9 +186,9 @@ module framebuffer (
                     pixel_count <= 0;
                     pixel_x <= pixel_x + 1;
                     fifo_read_pos <= fifo_read_pos + 1;
-                end else if (video_y >= windows_v_start_9bit &&
+                end else if (video_y >= windows_v_start_9bit_q &&
                         video_x >= {3'b0, window_h_start, 2'b0} &&
-                        video_y < (windows_v_start_9bit + height)) begin
+                        video_y < (windows_v_start_9bit_q + height)) begin
                     pixel_count <= pixel_count + 1;
                     fifo_read_word <= fifo[fifo_read_pos[4:1]];
                 end

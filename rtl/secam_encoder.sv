@@ -66,8 +66,12 @@ module secam_encoder (
         .in (carrier_period_modulate),
         .out(carrier_period_filtered)
     );
-    wire signed [8:0] carrier_period_maybe_filtered = chroma_lowpass_enable ? carrier_period_filtered : carrier_period_modulate;
 
+    bit signed [8:0] carrier_period_maybe_filtered = 0;
+    always_ff @(posedge clk) begin
+        carrier_period_maybe_filtered <= chroma_lowpass_enable ? carrier_period_filtered : carrier_period_modulate;
+    end
+    
     filter_chroma_preemphasis_lowpass chlolo (
         .clk(clk),
         .in (carrier_period_maybe_filtered),

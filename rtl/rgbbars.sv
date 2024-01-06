@@ -14,9 +14,12 @@ module rgbbars (
     output bit signed [7:0] yuv_v
 );
 
-    bit [7:0] R;
-    bit [7:0] G;
-    bit [7:0] B;
+    bit [7:0] R_d;
+    bit [7:0] G_d;
+    bit [7:0] B_d;
+    bit [7:0] R_q;
+    bit [7:0] G_q;
+    bit [7:0] B_q;
 
     bit [7:0] rgbconv_Y;
     bit signed [7:0] rgbconv_Cb;
@@ -24,9 +27,9 @@ module rgbbars (
 
     RGB2YCbCr rgb_conv (
         .clk,
-        .R,
-        .G,
-        .B,
+        .R (R_q),
+        .G (G_q),
+        .B (B_q),
         .Y (rgbconv_Y),
         .Cb(rgbconv_Cb),
         .Cr(rgbconv_Cr)
@@ -44,6 +47,10 @@ module rgbbars (
         luma  <= rgbconv_Y;
         yuv_u <= rgbconv_Cb;
         yuv_v <= rgbconv_Cr;
+
+        R_q   <= R_d;
+        G_q   <= G_d;
+        B_q   <= B_d;
     end
 
     always_comb begin
@@ -67,8 +74,8 @@ module rgbbars (
             endcase
         end
 
-        R = rgb[2] ? strength : 0;
-        G = rgb[1] ? strength : 0;
-        B = rgb[0] ? strength : 0;
+        R_d = rgb[2] ? strength : 0;
+        G_d = rgb[1] ? strength : 0;
+        B_d = rgb[0] ? strength : 0;
     end
 endmodule

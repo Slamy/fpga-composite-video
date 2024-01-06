@@ -143,9 +143,12 @@ It doesn't look that bad but SECAM surely has problems with sharp edges when it 
 * Proven in use on Tang Nano 9K (based on GW1NR-9)
     * 48 MHz sample rate
     * GOWIN EDA used as Synthesis tool
-    * Uses 43% of logic elements for whole test picture generator project
+    * Uses 42% of logic elements for whole test picture generator project
     * Should take only 20% of logic elements as about the half is spent on the PSRAM controller and the debugging interface
     * Uses 83% of DSP units
+        * 9 MULT9X9
+        * 10 MULT18X18
+        * 1 ALU54D
 
 ## Used Resources to create this
 
