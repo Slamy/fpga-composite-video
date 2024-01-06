@@ -37,6 +37,10 @@ module composite_video_encoder (
     bit signed [7:0] u_scaler_mem[4];
     bit signed [7:0] v_scaler_mem[4];
 
+    bit [7:0] y_scaler;
+    bit signed [7:0] u_scaler;
+    bit signed [7:0] v_scaler;
+
     bit [7:0] luma_scaled;
     bit signed [7:0] u_scaled;
     bit signed [7:0] v_scaled;
@@ -56,46 +60,14 @@ module composite_video_encoder (
         v_scaler_mem[2] = `CONFIG_SECAM_V_SCALER;
     end
 
-    bit [1:0] video_standard_adr;
-
     always_ff @(posedge clk) begin
-        // TODO for GOWIN Support.
-        // Why can't I use video_standard as an index?
-        // It seems to not work. Even if I translate it using if and else if
-        // to an actual number...
-        /*
-        if (video_standard == PAL) video_standard_adr <= 0;
-        else if (video_standard == NTSC) video_standard_adr <= 1;
-        else if (video_standard == SECAM) video_standard_adr <= 2;
+        y_scaler <= y_scaler_mem[video_standard];
+        u_scaler <= u_scaler_mem[video_standard];
+        v_scaler <= v_scaler_mem[video_standard];
 
-        luma_scaled <= 8'((16'(luma_q) * 16'(y_scaler_mem[video_standard_adr])) >> 8);
-        u_scaled <= 8'((16'(yuv_u_q) * 16'(u_scaler_mem[video_standard_adr])) >>> 6);
-        v_scaled <= 8'((16'(yuv_v_q) * 16'(v_scaler_mem[video_standard_adr])) >>> 6);
-        */
-        // TODO The following code is only a substitution until a real
-        // solution is found...
-
-        case (video_standard)
-            PAL: luma_scaled <= 8'((16'(luma_q) * 16'(y_scaler_mem[0])) >> 8);
-            NTSC: luma_scaled <= 8'((16'(luma_q) * 16'(y_scaler_mem[1])) >> 8);
-            SECAM: luma_scaled <= 8'((16'(luma_q) * 16'(y_scaler_mem[2])) >> 8);
-            default: ;  // Do nothing
-        endcase
-
-        case (video_standard)
-            PAL: u_scaled <= 8'((16'(yuv_u_q) * 16'(u_scaler_mem[0])) >>> 6);
-            NTSC: u_scaled <= 8'((16'(yuv_u_q) * 16'(u_scaler_mem[1])) >>> 6);
-            SECAM: u_scaled <= 8'((16'(yuv_u_q) * 16'(u_scaler_mem[2])) >>> 6);
-            default: ;  // Do nothing
-        endcase
-
-        case (video_standard)
-            PAL: v_scaled <= 8'((16'(yuv_v_q) * 16'(v_scaler_mem[0])) >>> 6);
-            NTSC: v_scaled <= 8'((16'(yuv_v_q) * 16'(v_scaler_mem[1])) >>> 6);
-            SECAM: v_scaled <= 8'((16'(yuv_v_q) * 16'(v_scaler_mem[2])) >>> 6);
-            default: ;  // Do nothing
-        endcase
-
+        luma_scaled <= 8'((16'(luma_q) * 16'(y_scaler)) >> 8);
+        u_scaled <= 8'((16'(yuv_u_q) * 16'(u_scaler)) >>> 8);
+        v_scaled <= 8'((16'(yuv_v_q) * 16'(v_scaler)) >>> 8);
     end
 
     // The filters used on chroma and luma might cause both signals

@@ -17,10 +17,10 @@ def set_default_scalers(debugcom: DebugCom):
 
     # Might look dark on Commodore 1084 but on the USB videograbber these values
     # are suitable for 75% and 100% color bars.
-    _, u_scale, v_scale = color.ypbpr2yuv(0, 11, 11)
+    _, u_scale, v_scale = color.ypbpr2yuv(0, 44, 44)
     debugcom.set_video_prescalers("PAL", 100, round(u_scale), round(v_scale))
     debugcom.set_video_prescalers("NTSC", 100, round(u_scale), round(v_scale))
-    _, u_scale, v_scale = color.ypbpr2yuv(0, 9, 9)
+    _, u_scale, v_scale = color.ypbpr2yuv(0, 36, 36)
     debugcom.set_video_prescalers("SECAM", 100, round(u_scale), round(v_scale))
 
     debugcom.enable_qam_chroma_bandpass(True)
