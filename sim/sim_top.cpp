@@ -11,7 +11,7 @@
 #include <png.h>
 
 const int width = 0x0c00U;
-const int lines = 630 * 2;
+const int lines = 300;
 const int stretch = 1;
 const int height = lines * stretch;
 vluint64_t sim_time = 0;

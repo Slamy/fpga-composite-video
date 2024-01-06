@@ -66,6 +66,21 @@ This picture clearly shows the problems with SECAM as not the color itself is tr
 
 Here EBU 100% to check for edge case problems.
 
+### SECAM stress test
+
+As SECAM continued to cause issues a very specific test was created for analysis. A sepcial test picture with color gradients and multiple color bars.
+As SECAM doesn't transmit the current color but instead color changes this should help to check various scenarios in one picture.
+
+It also contains a part from my Pong machine I'm currently working one.
+
+![SECAM stress test reference](doc/secam_stresstest.png)
+
+Here is the result, received from the USB video grabber:
+
+![SECAM stress test result](doc/secam_stresstest_result.png)
+
+It doesn't look that bad but SECAM surely has problems with sharp edges when it comes to my implementation.
+
 ## Project structure
 
 * rtl
@@ -106,12 +121,10 @@ Here EBU 100% to check for edge case problems.
 
 * NTSC chroma artefacts very present at the moment
 * There might be a gamma correction missing
-* Saturated artithmetics instead of overflow
 * Reduce amount of used DSPs
 * Ask GOWIN support for help with synthesis problems
 * Fixing SECAM (might be impossible due to lack of info)
 * Reduce 32 Bit Pixel format to something more compact (24 Bit)
-* UART is not working during startup with higher baud rate?
 * Add schematic for external video DAC circuit
 * HIL verify issues, OpenCV is not very consistent when capturing video footage
     * VLC is as bright as a 1084 but seems to change brightness on the fly.
@@ -130,21 +143,11 @@ Here EBU 100% to check for edge case problems.
 * Proven in use on Tang Nano 9K (based on GW1NR-9)
     * 48 MHz sample rate
     * GOWIN EDA used as Synthesis tool
-    * Uses 41% of logic elements for whole test picture generator project
+    * Uses 43% of logic elements for whole test picture generator project
     * Should take only 20% of logic elements as about the half is spent on the PSRAM controller and the debugging interface
-    * Uses 90% of DSP units
+    * Uses 83% of DSP units
 
 ## Used Resources to create this
-
-PSRAM:
-* https://github.com/zf3/psram-tang-nano-9k.git
-* https://github.com/edanuff/psram-tang-nano-9k.git
-* https://github.com/dominicbeesley/psram-tang-nano-9k.git
-
-YUV Framebuffer formats:
-* https://www.flir.de/support-center/iis/machine-vision/knowledge-base/understanding-yuv-data-formats/
-* http://www.chiark.greenend.org.uk/doc/linux-doc-2.6.32/html/media/ch02.html
-* [Efficient RGB 2 YCbCr](https://sistenix.com/rgb2ycbcr.html)
 
 System Verilog:
 * https://verificationguide.com/systemverilog/systemverilog-parameters-and-define/
@@ -180,6 +183,16 @@ SECAM:
 * [Wikipedia Article](https://de.wikipedia.org/wiki/SECAM)
 * [Very old article on the inner workings and formulas](http://web.archive.org/web/20160502235024/http://www.pembers.freeserve.co.uk/World-TV-Standards/Colour-Standards.html)
 * [Test pictures and their signaling](http://web.archive.org/web/20160409090425/http://www.pembers.freeserve.co.uk/Test-Cards/Test-Card-Technical.html#Bars)
+
+PSRAM:
+* https://github.com/zf3/psram-tang-nano-9k.git
+* https://github.com/edanuff/psram-tang-nano-9k.git
+* https://github.com/dominicbeesley/psram-tang-nano-9k.git
+
+YUV Framebuffer formats:
+* https://www.flir.de/support-center/iis/machine-vision/knowledge-base/understanding-yuv-data-formats/
+* http://www.chiark.greenend.org.uk/doc/linux-doc-2.6.32/html/media/ch02.html
+* [Efficient RGB 2 YCbCr](https://sistenix.com/rgb2ycbcr.html)
 
 DAC:
 * [R2R resistor ladder calculator](http://www.aaabbb.de/JDAC/DAC_R2R_network_calculation_en.php)

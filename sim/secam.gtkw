@@ -1,0 +1,83 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Fri Jan  5 18:31:30 2024
+[*]
+[dumpfile] "/home/andre/GIT/fpga_pong/sim/waveform.vcd"
+[dumpfile_mtime] "Fri Jan  5 18:22:08 2024"
+[dumpfile_size] 832329183
+[savefile] "/home/andre/GIT/fpga_pong/sim/secam.gtkw"
+[timestart] 616060
+[size] 2560 1348
+[pos] -1 -1
+*-12.650105 648247 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.top_testpic_generator.
+[treeopen] TOP.top_testpic_generator.cvbs.
+[sst_width] 310
+[signals_width] 441
+[sst_expanded] 1
+[sst_vpaned_height] 415
+@22
+TOP.top_testpic_generator.cvbs.secam.enabled_amplitude[5:0]
+@8022
+TOP.top_testpic_generator.cvbs.secam.enabled_amplitude[5:0]
+@20000
+-
+-
+@8022
+TOP.top_testpic_generator.cvbs.secam.enabled_amplitude_filtered[5:0]
+@20000
+-
+-
+@22
+TOP.top_testpic_generator.cvbs.secam.enabled_amplitude_filtered[5:0]
+@8420
+TOP.top_testpic_generator.cvbs.secam.carrier_period_modulate[8:0]
+@20000
+-
+-
+@8420
+TOP.top_testpic_generator.cvbs.secam.carrier_period_emphasis[8:0]
+@20000
+-
+-
+@808421
+TOP.top_testpic_generator.cvbs.secam.carrier_period_emphasis2[12:0]
+@29
+(0)TOP.top_testpic_generator.cvbs.secam.carrier_period_emphasis2[12:0]
+(1)TOP.top_testpic_generator.cvbs.secam.carrier_period_emphasis2[12:0]
+(2)TOP.top_testpic_generator.cvbs.secam.carrier_period_emphasis2[12:0]
+(3)TOP.top_testpic_generator.cvbs.secam.carrier_period_emphasis2[12:0]
+(4)TOP.top_testpic_generator.cvbs.secam.carrier_period_emphasis2[12:0]
+(5)TOP.top_testpic_generator.cvbs.secam.carrier_period_emphasis2[12:0]
+(6)TOP.top_testpic_generator.cvbs.secam.carrier_period_emphasis2[12:0]
+(7)TOP.top_testpic_generator.cvbs.secam.carrier_period_emphasis2[12:0]
+(8)TOP.top_testpic_generator.cvbs.secam.carrier_period_emphasis2[12:0]
+(9)TOP.top_testpic_generator.cvbs.secam.carrier_period_emphasis2[12:0]
+(10)TOP.top_testpic_generator.cvbs.secam.carrier_period_emphasis2[12:0]
+(11)TOP.top_testpic_generator.cvbs.secam.carrier_period_emphasis2[12:0]
+(12)TOP.top_testpic_generator.cvbs.secam.carrier_period_emphasis2[12:0]
+@1001201
+-group_end
+@20000
+-
+-
+@8024
+TOP.top_testpic_generator.cvbs.secam.phase_increment[50:0]
+@20000
+-
+-
+@8420
+TOP.top_testpic_generator.cvbs.secam.chroma[7:0]
+@20000
+-
+@800028
+TOP.top_testpic_generator.testpattern.rgb[2:0]
+@28
+(0)TOP.top_testpic_generator.testpattern.rgb[2:0]
+(1)TOP.top_testpic_generator.testpattern.rgb[2:0]
+(2)TOP.top_testpic_generator.testpattern.rgb[2:0]
+@1001200
+-group_end
+[pattern_trace] 1
+[pattern_trace] 0

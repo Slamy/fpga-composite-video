@@ -18,3 +18,23 @@ to 0.2V black and 0.7V white. I don't know if this is the right solution but it 
 ## Interlacing causes flicker on hard vertical edges
 
 Vertical blurring is required! Oh god, I hate interlaced modes. Especially on the Workbench of the Amiga.
+
+## SECAM is very complicated
+
+Everything needs to work together to get a nice picture.
+PAL and NTSC are transmitting the current state of U and V.
+But SECAM transmission also depends on the change of the state as a deemphasis is used on the receiver side.
+On the sender side a fitting preemphasis must be performed. This means that there is certain "swing" to the change. One can imagine this as a low pass on the receiver side and the sender side must provide "more" than the intented value to fight against the low pass.
+This seems to make SECAM pretty stable as a slight shaky modulation might not affect the result.
+If this "swing" is not present, the color looks dull and faded as the expected color will emerge later on.
+
+But at the same time, there is also something called the HF Preemphasis. The amplitude of the frequency modulated signal must be correct or artefacts will occur during strong modulation. The more deviation the frequency is from a certain "center", the higher the amplitude must be.
+
+* The amplitude of the color carrier must be correct
+    * If not, there are artefacts!
+* The preemphasis must be correct.
+    * If not, there are artefacts!
+
+When I started this I assumed that the line alternation might be the most complex. I was wrong as this part was only a mux.
+
+Most of this project was spent on refining the SECAM encoder. I don't know if this was really worth it. But I like a good challenge.

@@ -19,9 +19,9 @@ module pal_ntsc_encoder (
     input signed [5:0] debug_burst_v
 );
 
+`ifdef CONFIG_PAL_NTSC_CHROMA_LOWPASS
     bit signed [5:0] yuv_u_filtered;
     bit signed [5:0] yuv_v_filtered;
-
     pal_chroma_lowpass clow0 (
         .clk(clk),
         .in (yuv_u[5:0]),
@@ -33,7 +33,10 @@ module pal_ntsc_encoder (
         .in (yuv_v[5:0]),
         .out(yuv_v_filtered)
     );
-
+`else
+    wire signed [5:0] yuv_u_filtered = yuv_u[5:0];
+    wire signed [5:0] yuv_v_filtered = yuv_v[5:0];
+`endif
     // We start by performing quadrature amplitude modulation
     // The result will have frequencies above and below the carrier
     // and thus will be defined as unfiltered here
@@ -124,7 +127,7 @@ module pal_ntsc_encoder (
 
     always_ff @(posedge clk) begin
         chroma_filtered_check_q2 <= chroma_filtered_check;
-        //assert (chroma_filtered == chroma_filtered_check_q2);
+        assert (chroma_filtered == chroma_filtered_check_q2);
     end
 `endif
 

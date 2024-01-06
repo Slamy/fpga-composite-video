@@ -3,14 +3,15 @@ import cv2
 from debugcom import DebugCom
 from framebuffer import transfer_picture, framebuffer_easy_conf
 
-if __name__ == '__main__':
-    videonorm = "PAL"
+
+def resize_and_transfer_picture():
+    videonorm = "SECAM"
     interlacing_mode = True
     rgb_mode = True
     width = 768 + 16
 
     debugcom = DebugCom()
-    height = framebuffer_easy_conf(debugcom, videonorm, interlacing_mode, rgb_mode, width)
+    height = framebuffer_easy_conf(debugcom, videonorm, interlacing_mode, rgb_mode, width, overscan=15)
     filename = "../doc/parrot.jpg"
     img = cv2.imread(filename)
     print("Resizing...")
@@ -23,3 +24,7 @@ if __name__ == '__main__':
         img = cv2.GaussianBlur(img, (1, 3), 0.6)
 
     transfer_picture(debugcom, img, rgb_mode)
+
+
+if __name__ == '__main__':
+    resize_and_transfer_picture()

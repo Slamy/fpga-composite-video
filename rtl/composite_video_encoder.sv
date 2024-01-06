@@ -13,7 +13,7 @@ module composite_video_encoder (
     input                     [7:0] luma,
     input  signed             [7:0] yuv_u,
     input  signed             [7:0] yuv_v,
-    output                    [7:0] video,
+    output bit                [7:0] video,
     output bit                      video_overflow,
            debug_bus_if.slave       dbus,
     input                           even_field
@@ -21,6 +21,9 @@ module composite_video_encoder (
 
     bit [5:0] debug_burst_u = -14;  // TODO remove
     bit [5:0] debug_burst_v = 4;  // TODO remove
+    bit [7:0] secam_debug_db_swing = 52;
+    bit [6:0] secam_debug_dr_swing = 42;
+    bit [4:0] secam_debug_carrier_delay = 20;
     bit chroma_lowpass_enable = 0;  // TODO remove
     bit chroma_bandpass_enable = 1;  // TODO remove
     bit chroma_enable = 1;
@@ -171,6 +174,10 @@ module composite_video_encoder (
         .even_line,
         .yuv_u(yuv_u_delayed),
         .yuv_v(yuv_v_delayed),
+        .debug_db_swing(secam_debug_db_swing),
+        .debug_dr_swing(secam_debug_dr_swing),
+        .carrier_period_delay(secam_debug_carrier_delay),
+        .chroma_lowpass_enable,
         .enabled(secam_enabled),
         .newframe(newframe),
         .luma_filtered,
@@ -183,8 +190,8 @@ module composite_video_encoder (
     // integer overflows.
     bit [8:0] video_d;
     bit [8:0] video_q;
+    //bit [8:0] video;
 
-    assign video = video_q[7:0];
 
     always_ff @(posedge clk) begin
         video_q <= video_d;
@@ -194,6 +201,11 @@ module composite_video_encoder (
 
         if (newframe) video_overflow <= 0;
         else if (video_d[8]) video_overflow <= 1;
+
+        if (video_q[8]) video <= 0;
+        else video <= video_q[7:0];
+
+
     end
 
     // Add everything together
@@ -231,6 +243,9 @@ module composite_video_encoder (
                 9: luma_black_level <= dbus.write_data;
                 12: yuv_u_delay_duration <= dbus.write_data[4:0];
                 13: yuv_v_delay_duration <= dbus.write_data[4:0];
+                14: secam_debug_db_swing <= dbus.write_data[7:0];
+                15: secam_debug_dr_swing <= dbus.write_data[6:0];
+                16: secam_debug_carrier_delay <= dbus.write_data[4:0];
                 default: ;
             endcase
         end

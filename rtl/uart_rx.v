@@ -62,7 +62,7 @@ module uart_rx #(
                 next_state = S_STOP;
             else next_state = S_REC_BYTE;
             S_STOP:
-            if(cycle_cnt == CYCLE/2 - 1)//half bit cycle,to avoid missing the next byte receiver
+            if (cycle_cnt == CYCLE / 2 - 1)  //half bit cycle,to avoid missing the next byte receiver
                 next_state = S_DATA;
             else next_state = S_STOP;
             S_DATA:

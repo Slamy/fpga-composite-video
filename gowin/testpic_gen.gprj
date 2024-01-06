@@ -28,6 +28,7 @@
         <File path="../rtl/memory_tester.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/pal_ntsc_encoder.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/qam.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/rgbbars.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/secam_ampl.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/secam_encoder.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/sinus.sv" type="file.verilog" enable="1"/>

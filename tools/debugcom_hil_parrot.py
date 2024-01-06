@@ -16,7 +16,7 @@ def grab_and_store(videonorm):
     cv2.imwrite(f"../doc/parrot_{videonorm.lower()}.png", frame)
 
 
-def main():
+def test_parrot():
     interlacing_mode = True
     rgb_mode = True
     width = 768 + 16
@@ -25,7 +25,7 @@ def main():
 
     # Start with PAL
     videonorm = "PAL"
-    height = framebuffer_easy_conf(debugcom, videonorm, interlacing_mode, rgb_mode, width)
+    height = framebuffer_easy_conf(debugcom, videonorm, interlacing_mode, rgb_mode, width, overscan=15)
     print("Resizing...")
     resized = cv2.resize(img, dsize=(width, height), interpolation=cv2.INTER_AREA)
 
@@ -40,12 +40,12 @@ def main():
 
     # Continue with SECAM as the resolution is the same
     videonorm = "SECAM"
-    height = framebuffer_easy_conf(debugcom, videonorm, interlacing_mode, rgb_mode, width)
+    height = framebuffer_easy_conf(debugcom, videonorm, interlacing_mode, rgb_mode, width, overscan=15)
     grab_and_store(videonorm)
 
     # Then do NTSC as the resolution is different
     videonorm = "NTSC"
-    height = framebuffer_easy_conf(debugcom, videonorm, interlacing_mode, rgb_mode, width)
+    height = framebuffer_easy_conf(debugcom, videonorm, interlacing_mode, rgb_mode, width, overscan=15)
     grab_and_store(videonorm)
 
     print("Resizing...")
@@ -57,4 +57,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    test_parrot()

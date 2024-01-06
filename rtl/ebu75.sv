@@ -14,7 +14,7 @@ module ebu75 (
     output bit signed [7:0] yuv_v
 );
 
-    bit [7:0] pixel_x = 0;
+    bit [8:0] pixel_x = 0;
 
     always_ff @(posedge clk) begin
         if (newline) pixel_x <= 0;
@@ -26,7 +26,7 @@ module ebu75 (
         yuv_u = 0;
         yuv_v = 0;
 
-        if (visible_window) begin
+        if (visible_window && !pixel_x[8]) begin
             case (pixel_x[7:7-2])
                 3'd0: begin
                     luma  = 255;

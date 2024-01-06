@@ -97,8 +97,7 @@ def generate_secam_chroma_lowpass_filter():
     b_after_dot = 11
     a_after_dot = 8
     # whether 3.0 MHz or 1.8MHz shows no difference
-    # but having low frequency here might help reducing high preemphasis swing
-    sos = signal.bessel(1, 1.3e6, 'lp', fs=system_clock, output='sos')
+    sos = signal.bessel(1, 1.8e6, 'lp', fs=system_clock, output='sos')
     b, a = signal.sos2tf(sos)
     fpfilter = FpFilter(b, a, b_after_dot, a_after_dot)
     print_filter("SECAM_CHROMA_LOWPASS", fpfilter)
@@ -129,8 +128,8 @@ def frequency_to_amplitude(x):
         # 120 gives a more stable purple than 60
         y = 120 * (center - x) * (center - x)
     else:
-    	# 60 gives better results than 90
-    	# 90 gives a negative luma dent in blue
+        # 60 gives better results than 90
+        # 90 gives a negative luma dent in blue
         y = 60 * (center - x) * (center - x)
 
     y = y + 5

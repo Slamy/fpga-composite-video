@@ -6,6 +6,15 @@ import serial
 import serial.threaded
 
 
+def set_bit(v, index, x):
+    """Set the index:th bit of v to 1 if x is truthy, else to 0, and return the new value."""
+    mask = 1 << index  # Compute mask, an integer with just bit 'index' set.
+    v &= ~mask  # Clear the bit indicated by the mask (if x is False)
+    if x:
+        v |= mask  # If x was True, set the bit indicated by the mask.
+    return v  # Return the result, we're done.
+
+
 class DebugCom:
     def __init__(self):
         self.serial = serial.Serial()
@@ -19,6 +28,9 @@ class DebugCom:
         # This might be a linux only problem? Requires check on another operation system.
         self.serial.close()
         self.serial.open()
+
+        self.config_flags = 0
+        self.enable_chroma_output(True)
 
     def memwrite_u8(self, addr, val):
         command = struct.pack(">cHB", b'W', addr, val)
@@ -88,13 +100,10 @@ class DebugCom:
         if video_device:
             assert os.system(f"v4l2-ctl -d {video_device} -s {standard}") == 0
 
-    def configure_framebuffer(self, preferred_width, lines_per_field, interlacing_mode, clks_per_pixel=None):
+    def configure_framebuffer(self, width, lines_per_field, interlacing_mode, clks_per_pixel=None):
         active_window_ticks = 3 * (768 + 16)
         if clks_per_pixel is None:
-            clks_per_pixel = math.ceil(active_window_ticks / preferred_width)
-            width = round(active_window_ticks / clks_per_pixel)
-        else:
-            width = preferred_width
+            clks_per_pixel = math.floor(active_window_ticks / width)
 
         height = lines_per_field * 2 if interlacing_mode else lines_per_field
         stride = width * 4 if interlacing_mode else width * 2
@@ -127,6 +136,15 @@ class DebugCom:
         self.memwrite_s8(8, v)
         print(f"Set NTSC Burst {u} {v}")
 
+    def set_secam_preemphasis_swing(self, db, dr):
+        self.memwrite_s8(14, db)
+        self.memwrite_s8(15, dr)
+        print(f"Set SECAM Preemphasis Swing {db} {dr}")
+
+    def set_secam_ampl_delay(self, ampl_delay):
+        self.memwrite_s8(16, ampl_delay)
+        print(f"Set SECAM Ampltidue Delay {ampl_delay}")
+
     def set_ntsc_burst(self, amplitude, phase):
         v = -round(amplitude * math.sin(math.radians(phase)))
         u = -round(amplitude * math.cos(math.radians(phase)))
@@ -150,6 +168,34 @@ class DebugCom:
             self.memwrite_u8(0x0200 + 4 * 0 + 2, y)
             self.memwrite_u8(0x0200 + 4 * 1 + 2, u)
             self.memwrite_u8(0x0200 + 4 * 2 + 2, v)
+
+    def enable_chroma_lowpass(self, v):
+        self.config_flags = set_bit(self.config_flags, 0, v)
+        self.memwrite_u8(6, self.config_flags)
+
+    def enable_qam_chroma_bandpass(self, v):
+        self.config_flags = set_bit(self.config_flags, 1, v)
+        self.memwrite_u8(6, self.config_flags)
+
+    def enable_single_line_mode(self, v):
+        self.config_flags = set_bit(self.config_flags, 2, v)
+        self.memwrite_u8(6, self.config_flags)
+
+    def enable_internal_colorbars(self, v):
+        self.config_flags = set_bit(self.config_flags, 3, v)
+        self.memwrite_u8(6, self.config_flags)
+
+    def enable_chroma_output(self, v):
+        self.config_flags = set_bit(self.config_flags, 4, v)
+        self.memwrite_u8(6, self.config_flags)
+
+    def enable_interlacing(self, v):
+        self.config_flags = set_bit(self.config_flags, 5, v)
+        self.memwrite_u8(6, self.config_flags)
+
+    def enable_rgb_mode(self, v):
+        self.config_flags = set_bit(self.config_flags, 6, v)
+        self.memwrite_u8(6, self.config_flags)
 
     def logic_analyzer_read(self):
 

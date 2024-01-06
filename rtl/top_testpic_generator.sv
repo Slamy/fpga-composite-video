@@ -153,7 +153,7 @@ module top_testpic_generator (
         .even_field
     );
 
-    video_standard_e video_standard = PAL;
+    video_standard_e video_standard = SECAM;
 
     bit [7:0] luma;
     bit signed [7:0] yuv_u;
@@ -202,22 +202,22 @@ module top_testpic_generator (
         .dbus
     );
 
-    bit [7:0] ebu75_luma;
-    bit signed [7:0] ebu75_yuv_u;
-    bit signed [7:0] ebu75_yuv_v;
-    bit ebu75_active = 1;
+    bit [7:0] colorbars_luma;
+    bit signed [7:0] colorbars_yuv_u;
+    bit signed [7:0] colorbars_yuv_v;
+    bit colorbars_active = 1;
 
-    ebu75 testpattern (
+    rgbbars testpattern (
         .clk,
         .newline,
         .newpixel,
-        .video_y,
+        .video_y(video_y - 38),
         .video_x,
         .visible_line,
         .visible_window,
-        .luma (ebu75_luma),
-        .yuv_u(ebu75_yuv_u),
-        .yuv_v(ebu75_yuv_v)
+        .luma(colorbars_luma),
+        .yuv_u(colorbars_yuv_u),
+        .yuv_v(colorbars_yuv_v)
     );
 
     always_ff @(posedge clk) begin
@@ -229,7 +229,7 @@ module top_testpic_generator (
                 4: v_active[8] <= dbus.write_data[0];
                 5: v_active[7:0] <= dbus.write_data;
                 6: begin
-                    ebu75_active <= dbus.write_data[3];
+                    colorbars_active   <= dbus.write_data[3];
                     interlacing_enable <= dbus.write_data[5];
                 end
                 default: ;
@@ -262,10 +262,10 @@ module top_testpic_generator (
         luma  = fb_luma;
         yuv_u = fb_yuv_u;
         yuv_v = fb_yuv_v;
-        if (ebu75_active) begin
-            luma  = ebu75_luma;
-            yuv_u = ebu75_yuv_u;
-            yuv_v = ebu75_yuv_v;
+        if (colorbars_active) begin
+            luma  = colorbars_luma;
+            yuv_u = colorbars_yuv_u;
+            yuv_v = colorbars_yuv_v;
         end
     end
 endmodule

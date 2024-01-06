@@ -3,6 +3,7 @@ import numpy as np
 
 import color
 from debugcom import DebugCom
+from defaults import set_default_scalers
 from framebuffer import transfer_picture
 from v4l import video_device, capture_still_frame
 
@@ -21,7 +22,6 @@ def construct_ebu(l):
     imga[y, 32 * 5:32 * 6] = [0, 0, l]
     imga[y, 32 * 6:32 * 7] = [l, 0, 0]
     imga[y, 32 * 7:32 * 8] = [0, 0, 0]
-
     return imga
 
 
@@ -33,14 +33,8 @@ def construct_ebu100():
     return construct_ebu(255)
 
 
-ntsc_burst_amplitude = 10
-phase = -45 + 33
-
-
 def grab_and_check_ebu75(videonorm):
     debugcom.configure_video_standard(videonorm, video_device=video_device)
-    # capture_video()
-    # exit(0)
     frame = capture_still_frame()[50:200, :]
 
     kernel = np.ones((5, 5), np.float32) / 25
@@ -53,14 +47,15 @@ def grab_and_check_ebu75(videonorm):
     red = list(np.flip(frame_avg[70, 484]))
     blue = list(np.flip(frame_avg[70, 569]))
     black = list(np.flip(frame_avg[70, 633]))
+    # R G B
 
     results = [white, yellow, cyan, green, purple, red, blue, black]
     print(f"{videonorm}:")
     print(f"White {white}")
     print(f"Yellow {yellow}")
-    print(f"Cyan {cyan}")
-    print(f"Green {green}")
-    print(f"Purple {purple}")
+    print(f"Cyan {cyan} {color.rgb2ycbcr(cyan[0], cyan[1], cyan[2])}")
+    print(f"Green {green} {color.rgb2ycbcr(green[0], green[1], green[2])}")
+    print(f"Purple {purple} {color.rgb2ycbcr(purple[0], purple[1], purple[2])}")
     print(f"Red {red}")
     print(f"Blue {blue}")
     print(f"Black {black}")
@@ -68,55 +63,60 @@ def grab_and_check_ebu75(videonorm):
     return frame, results
 
 
-if __name__ == '__main__':
-    ntsc_burst_amplitude = 15
-    ntsc_burst_phase = -45 + 33 - 5
-    debugcom.set_ntsc_burst(ntsc_burst_amplitude, ntsc_burst_phase)
-    debugcom.set_luma_black_level(47)
-    _, u_scale, v_scale = color.ypbpr2yuv(0, 12, 12)
-    debugcom.set_video_prescalers("PAL", 125, round(u_scale), round(v_scale))
-    debugcom.set_video_prescalers("NTSC", 125, round(u_scale), round(v_scale))
-    _, u_scale, v_scale = color.ypbpr2yuv(0, 10, 10)
-    debugcom.set_video_prescalers("SECAM", 125, round(u_scale), round(v_scale))
-
+def test_colorbars():
+    set_default_scalers(debugcom)
     interlacing_mode = False
     rgb_mode = False
     clks_per_pixel = 9
     width = 256
     lines_per_field = 256
     height = debugcom.configure_framebuffer(width, lines_per_field, interlacing_mode, clks_per_pixel)
-    config_flags = 4  # One line mode
-    config_flags ^= 2  # QAM Chroma Bandpass
-    config_flags ^= 16  # Chroma Enable
-    if interlacing_mode:
-        config_flags |= 32  # Interlacing Mode
-    if rgb_mode:
-        config_flags |= 64
-    debugcom.memwrite_u8(6, config_flags)
+    debugcom.enable_single_line_mode(True)
+    debugcom.enable_qam_chroma_bandpass(True)
+    debugcom.enable_chroma_output(True)
+    debugcom.enable_chroma_lowpass(False)
+    debugcom.enable_interlacing(interlacing_mode)
+    debugcom.enable_rgb_mode(rgb_mode)
 
+    print("----- 100% -----")
     imga = construct_ebu100()
     transfer_picture(debugcom, imga, rgb_mode)
-    ntsc_frame, ntsc_result = grab_and_check_ebu75("NTSC")
-    pal_frame, pal_result = grab_and_check_ebu75("PAL")
-    secam_frame, secam_result = grab_and_check_ebu75("SECAM")
+    ntsc_frame, ntsc_result_100 = grab_and_check_ebu75("NTSC")
+    pal_frame, pal_result_100 = grab_and_check_ebu75("PAL")
+    debugcom.set_delay_lines(0, 0, 6)
+    secam_frame, secam_result_100 = grab_and_check_ebu75("SECAM")
+    debugcom.set_delay_lines(0, 0, 0)
     ebu100concat = cv2.vconcat([ntsc_frame, pal_frame, secam_frame])
-    print(f"NTSC {ntsc_result}")
-    print(f"PAL  {pal_result}")
-    print(f"SECAM {secam_result}")
-    cv2.imwrite(f"../doc/ebu100.png", ebu100concat)
-
+    print("-----  75% -----")
     imga = construct_ebu75()
     transfer_picture(debugcom, imga, rgb_mode)
-    ntsc_frame, ntsc_result = grab_and_check_ebu75("NTSC")
-    pal_frame, pal_result = grab_and_check_ebu75("PAL")
-    secam_frame, secam_result = grab_and_check_ebu75("SECAM")
+    ntsc_frame, ntsc_result_75 = grab_and_check_ebu75("NTSC")
+    pal_frame, pal_result_75 = grab_and_check_ebu75("PAL")
+    debugcom.set_delay_lines(0, 0, 6)
+    secam_frame, secam_result_75 = grab_and_check_ebu75("SECAM")
+    debugcom.set_delay_lines(0, 0, 0)
     ebu75concat = cv2.vconcat([ntsc_frame, pal_frame, secam_frame])
-    print(f"NTSC {ntsc_result}")
-    print(f"PAL  {pal_result}")
-    print(f"SECAM {secam_result}")
+
+    print("-----  75% -----")
+    print(f"NTSC  {ntsc_result_75}")
+    print(f"PAL   {pal_result_75}")
+    print(f"SECAM {secam_result_75}")
+    print("----- 100% -----")
+    print(f"NTSC  {ntsc_result_100}")
+    print(f"PAL   {pal_result_100}")
+    print(f"SECAM {secam_result_100}")
+    print("----- ---- -----")
+
     cv2.imwrite(f"../doc/ebu75.png", ebu75concat)
+    cv2.imwrite(f"../doc/ebu100.png", ebu100concat)
 
     concat = cv2.vconcat([ebu75concat, ebu100concat])
+
+    return concat
+
+
+if __name__ == '__main__':
+    concat = test_colorbars()
 
     # Display the resulting frame
     cv2.imshow("preview", concat)

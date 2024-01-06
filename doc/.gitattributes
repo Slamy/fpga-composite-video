@@ -1,6 +1,0 @@
-parrot.jpg filter=lfs diff=lfs merge=lfs -text
-parrot_pal.png filter=lfs diff=lfs merge=lfs -text
-parrot_secam.png filter=lfs diff=lfs merge=lfs -text
-parrot_ntsc.png filter=lfs diff=lfs merge=lfs -text
-ebu100.png filter=lfs diff=lfs merge=lfs -text
-ebu75.png filter=lfs diff=lfs merge=lfs -text

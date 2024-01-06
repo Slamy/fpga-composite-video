@@ -6,7 +6,11 @@ module secam_encoder (
     input signed [7:0] yuv_u,
     input signed [7:0] yuv_v,
     input enabled,
+    input chroma_lowpass_enable,
     input [7:0] luma_filtered,
+    input signed [7:0] debug_db_swing,
+    input signed [6:0] debug_dr_swing,
+    input [4:0] carrier_period_delay,
     input newframe,
     output bit signed [7:0] chroma
 
@@ -15,6 +19,7 @@ module secam_encoder (
 
     bit [ClockDivideLastBit:0] clockdivide_counter = 0;
     bit [ClockDivideLastBit:0] phase_increment;
+    bit [ClockDivideLastBit:0] phase_increment_ampl;
     bit [4:0] carrier_phase;
 
     bit signed [8:0] carrier_period_modulate  /*verilator public_flat_rd*/;
@@ -23,7 +28,7 @@ module secam_encoder (
 
     secam_ampl ampl (
         .clk,
-        .phase_inc(phase_increment),
+        .phase_inc(phase_increment_ampl),
         .out_ampl (enabled_amplitude)
     );
     bit [5:0] enabled_amplitude_filtered;
@@ -61,42 +66,43 @@ module secam_encoder (
         .in (carrier_period_modulate),
         .out(carrier_period_filtered)
     );
+    wire signed [8:0] carrier_period_maybe_filtered = chroma_lowpass_enable ? carrier_period_filtered : carrier_period_modulate;
 
     filter_chroma_preemphasis_lowpass chlolo (
         .clk(clk),
-        .in (carrier_period_filtered),
+        .in (carrier_period_maybe_filtered),
         .out(carrier_period_emphasis)
     );
 
-    bit signed [8:0] carrier_period_emphasis2  /*verilator public_flat_rd*/;
+    bit signed [12:0] carrier_period_emphasis2  /*verilator public_flat_rd*/;
+    bit signed [12:0] carrier_period_emphasis2_delayed  /*verilator public_flat_rd*/;
+
+    delayfifo32 #(13) df (
+        .clk,
+        .in(carrier_period_emphasis2),
+        .latency(carrier_period_delay),
+        .out(carrier_period_emphasis2_delayed)
+    );
+
 
     always_ff @(posedge clk) begin
         if (even_line) begin
             // Db or U
-            // *3 gives faster blue than *2.5
-            carrier_period_emphasis2 <= carrier_period_filtered + 3*(carrier_period_filtered-carrier_period_emphasis); // *3
-            //carrier_period_emphasis2 <= carrier_period_filtered + ((carrier_period_filtered-carrier_period_emphasis)<<<1) + ((carrier_period_filtered-carrier_period_emphasis)>>>1); // *2.5
+            carrier_period_emphasis2 <= (13'(carrier_period_maybe_filtered)<<<4) + (debug_db_swing*(13'(carrier_period_maybe_filtered)-13'(carrier_period_emphasis)));
         end else begin
             // Dr or V
-            // *2 gives better results than *2.5.
-            // *2.5 gives too much overshoot on red and purple
-            // and one additional overshoot on cyan.
-            // On the other hand red and purple seemed to be very strong compared
-            // to PAL and NTSC. Applying scaling of 10 instead of 11 using scaler units
-            // shows good results for 2.5.
-            // going back to 2 shows low pass behaviour on purple
-            //carrier_period_emphasis2 <= carrier_period_filtered + ((carrier_period_filtered-carrier_period_emphasis)) + ((carrier_period_filtered-carrier_period_emphasis)>>>1); // *1.5
-            //carrier_period_emphasis2 <= carrier_period_filtered + ((carrier_period_filtered-carrier_period_emphasis)<<<1); //*2
-            carrier_period_emphasis2 <= carrier_period_filtered + ((carrier_period_filtered-carrier_period_emphasis)<<<1) + ((carrier_period_filtered-carrier_period_emphasis)>>>1); // *2.5
+            carrier_period_emphasis2 <= (13'(carrier_period_maybe_filtered)<<<4) + (debug_dr_swing*(13'(carrier_period_maybe_filtered)-13'(carrier_period_emphasis)));
 
         end
     end
 
     always_ff @(posedge clk) begin
         if (even_line) begin
-            phase_increment <=  `SECAM_CHROMA_DB_DDS_INCREMENT + (51'(carrier_period_emphasis2)<<<39);
+            phase_increment_ampl    <=  `SECAM_CHROMA_DB_DDS_INCREMENT + (51'(carrier_period_emphasis2)<<<35);
+            phase_increment <=  `SECAM_CHROMA_DB_DDS_INCREMENT + (51'(carrier_period_emphasis2_delayed)<<<35);
         end else begin
-            phase_increment <=  `SECAM_CHROMA_DR_DDS_INCREMENT - (51'(carrier_period_emphasis2)<<<39);
+            phase_increment_ampl <=  `SECAM_CHROMA_DR_DDS_INCREMENT - (51'(carrier_period_emphasis2)<<<35);
+            phase_increment <=  `SECAM_CHROMA_DR_DDS_INCREMENT - (51'(carrier_period_emphasis2_delayed)<<<35);
         end
     end
 
@@ -115,11 +121,11 @@ module secam_encoder (
 
 
 `ifdef VERILATOR
-    bit signed [8:0] carrier_period_filtered_check;
-    bit signed [8:0] carrier_period_filtered_check_q;
+    bit signed [9:0] carrier_period_filtered_check;
+    bit signed [9:0] carrier_period_filtered_check_q;
     bit signed [8:0] carrier_period_filtered_check_q2;
-    bit signed [8:0] carrier_period_emphasis_check;
-    bit signed [8:0] carrier_period_emphasis_check_q;
+    bit signed [9:0] carrier_period_emphasis_check;
+    bit signed [9:0] carrier_period_emphasis_check_q;
     bit signed [8:0] carrier_period_emphasis_check_q2;
 
     bit [5:0] enabled_amplitude_filtered_check;
@@ -146,7 +152,7 @@ module secam_encoder (
 
     filter_int_5tap chlo_check (
         .clk(clk),
-        .in(carrier_period_modulate),
+        .in(carrier_period_modulate <<< 1),
         .out(carrier_period_filtered_check),
         .b0(`SECAM_CHROMA_LOWPASS_B0),
         .b1(`SECAM_CHROMA_LOWPASS_B1),
@@ -163,7 +169,7 @@ module secam_encoder (
 
     filter_int_5tap chlolo_check (
         .clk(clk),
-        .in(carrier_period_filtered),
+        .in(carrier_period_maybe_filtered <<< 1),
         .out(carrier_period_emphasis_check),
         .b0(`SECAM_PREEMPHASIS_B0),
         .b1(`SECAM_PREEMPHASIS_B1),
@@ -184,10 +190,10 @@ module secam_encoder (
 
     always_ff @(posedge clk) begin
         carrier_period_filtered_check_q <= carrier_period_filtered_check;
-        carrier_period_filtered_check_q2 <= carrier_period_filtered_check_q;
+        carrier_period_filtered_check_q2 <= carrier_period_filtered_check_q[9:1];
 
         carrier_period_emphasis_check_q <= carrier_period_emphasis_check;
-        carrier_period_emphasis_check_q2 <= carrier_period_emphasis_check_q;
+        carrier_period_emphasis_check_q2 <= carrier_period_emphasis_check_q[9:1];
 
         enabled_amplitude_filtered_check_q2 <= enabled_amplitude_filtered_check;
 
