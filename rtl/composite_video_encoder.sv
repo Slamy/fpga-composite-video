@@ -2,50 +2,46 @@
 
 import common::*;
 
+/*
+ * Composite Video Baseband Signal Encoder
+ * Produces PAL, NTSC and SECAM encoded analog video.
+ */
 module composite_video_encoder (
-    input                           clk,
-    input                           sync,
-    input                           newframe,
-    input                           newline,
-    input                           qam_startburst,
-    input                           secam_enabled,
-    input  video_standard_e         video_standard,
-    input                     [7:0] luma,
-    input  signed             [7:0] yuv_u,
-    input  signed             [7:0] yuv_v,
-    output bit                [7:0] video,
-    output bit                      video_overflow,
-           debug_bus_if.slave       dbus,
-    input                           even_field
+    input                           clk,             // Clock signal as configured in python script
+    input                           sync,            // Analog vidoe sync signal
+    input                           newframe,        // Flag which marks start of frame
+    input                           newline,         // Flag which marks start of scanline
+    input                           qam_startburst,  // Starts PAL/NTSC burst
+    input                           secam_enabled,   // Activates SECAM carrier
+    input  video_standard_e         video_standard,  // PAL, NTSC or SECAM
+    input  ycbcr_s                  in,              // Digital video input
+    output bit                [7:0] video,           // Analog video output
+    output bit                      video_overflow,  // If 1, then mixing error occured
+           debug_bus_if.slave       dbus             // Debug interface
 );
 
-    bit [5:0] debug_burst_u = -14;  // TODO remove
-    bit [5:0] debug_burst_v = 4;  // TODO remove
-    bit [7:0] secam_debug_db_swing = 52;
-    bit [6:0] secam_debug_dr_swing = 42;
+    bit [5:0] debug_burst_u = `NTSC_BURST_U;  // TODO remove
+    bit [5:0] debug_burst_v = `NTSC_BURST_V;  // TODO remove
+    bit [7:0] secam_debug_db_swing = `CONFIG_SECAM_DB_SWING;
+    bit [6:0] secam_debug_dr_swing = `CONFIG_SECAM_DR_SWING;
     bit [4:0] secam_debug_carrier_delay = 20;
     bit chroma_lowpass_enable = 0;  // TODO remove
     bit chroma_bandpass_enable = 1;  // TODO remove
     bit chroma_enable = 1;
 
-    bit signed [7:0] yuv_u_q;
-    bit signed [7:0] yuv_v_q;
-    bit [7:0] luma_q;
+    ycbcr_s in_q;
 
     bit [7:0] luma_black_level = 52;
-    bit [7:0] y_scaler_mem[4];
-    bit signed [7:0] u_scaler_mem[4];
-    bit signed [7:0] v_scaler_mem[4];
+    /* TODO for GOWIN support
+     * Something here is wrong. It is required to set the ram style
+     * to "registers" to allow initialization. Otherwise it is all zeroes.
+     */
+    bit [7:0] y_scaler_mem[4]  /* synthesis syn_ramstyle = "registers" */;
+    bit signed [7:0] u_scaler_mem[4]  /* synthesis syn_ramstyle = "registers" */;
+    bit signed [7:0] v_scaler_mem[4]  /* synthesis syn_ramstyle = "registers" */;
 
-    bit [7:0] y_scaler;
-    bit signed [7:0] u_scaler;
-    bit signed [7:0] v_scaler;
-
-    bit [7:0] luma_scaled;
-    bit signed [7:0] u_scaled;
-    bit signed [7:0] v_scaled;
-
-    bit [7:0] luma_scaler = 150;
+    yuv_s scaler;
+    yuv_s scaled;
 
     initial begin
         video_overflow  = 0;
@@ -60,14 +56,29 @@ module composite_video_encoder (
         v_scaler_mem[2] = `CONFIG_SECAM_V_SCALER;
     end
 
+    // Handle debug bus for scaler configuration configuratuion
     always_ff @(posedge clk) begin
-        y_scaler <= y_scaler_mem[video_standard];
-        u_scaler <= u_scaler_mem[video_standard];
-        v_scaler <= v_scaler_mem[video_standard];
+        if (dbus.addr[15:8] == 8'h02 && dbus.write_enable) begin
+            case (dbus.addr[3:2])
+                0: y_scaler_mem[dbus.addr[1:0]] <= dbus.write_data;
+                1: u_scaler_mem[dbus.addr[1:0]] <= dbus.write_data;
+                2: v_scaler_mem[dbus.addr[1:0]] <= dbus.write_data;
+                default: ;
+            endcase
+        end
+    end
 
-        luma_scaled <= 8'((16'(luma_q) * 16'(y_scaler)) >> 8);
-        u_scaled <= 8'((16'(yuv_u_q) * 16'(u_scaler)) >>> 8);
-        v_scaled <= 8'((16'(yuv_v_q) * 16'(v_scaler)) >>> 8);
+    always_ff @(posedge clk) begin
+        // Perform the readout using a seperate step to reduce
+        // propagation delay
+        scaler.y <= y_scaler_mem[video_standard];
+        scaler.u <= u_scaler_mem[video_standard];
+        scaler.v <= v_scaler_mem[video_standard];
+
+        // Apply scaling to convert YCbCr into YUV using configurable scalers
+        scaled.y <= 8'((16'(in_q.y) * 16'(scaler.y)) >> 8);
+        scaled.u <= 8'((16'(in_q.cb) * 16'(scaler.u)) >>> 8);
+        scaled.v <= 8'((16'(in_q.cr) * 16'(scaler.v)) >>> 8);
     end
 
     // The filters used on chroma and luma might cause both signals
@@ -76,29 +87,28 @@ module composite_video_encoder (
     bit [4:0] luma_delay_duration = 0;
     bit [4:0] yuv_u_delay_duration = 0;
     bit [4:0] yuv_v_delay_duration = 0;
-    bit [7:0] luma_delayed;
-    bit signed [7:0] yuv_u_delayed;
-    bit signed [7:0] yuv_v_delayed;
 
-    delayfifo32 #(8) dfy (
+    yuv_s delayed;
+
+    delayfifo #(8) dfy (
         .clk,
-        .in(luma_scaled),
+        .in(scaled.y),
         .latency(luma_delay_duration),
-        .out(luma_delayed)
+        .out(delayed.y)
     );
 
-    delayfifo32 #(8) dfu (
+    delayfifo #(8) dfu (
         .clk,
-        .in(u_scaled),
+        .in(scaled.u),
         .latency(yuv_u_delay_duration),
-        .out(yuv_u_delayed)
+        .out(delayed.u)
     );
 
-    delayfifo32 #(8) dfv (
+    delayfifo #(8) dfv (
         .clk,
-        .in(v_scaled),
+        .in(scaled.v),
         .latency(yuv_v_delay_duration),
-        .out(yuv_v_delayed)
+        .out(delayed.v)
     );
 
     bit [7:0] luma_filtered;
@@ -108,7 +118,7 @@ module composite_video_encoder (
     // These are filtered out using this low pass.
     filter_pal_luma lumafilter0 (
         .clk(clk),
-        .in (luma_delayed),
+        .in (delayed.y),
         .out(luma_filtered)
     );
 
@@ -123,16 +133,14 @@ module composite_video_encoder (
     pal_ntsc_encoder pal_ntsc (
         .clk,
         .even_line,
-        .even_field,
         .newframe,
         .newline,
         .pal_mode,
         .chroma_lowpass_enable,
         .chroma_bandpass_enable,
-        .yuv_u(yuv_u_delayed),
-        .yuv_v(yuv_v_delayed),
+        .yuv_u(delayed.u),
+        .yuv_v(delayed.v),
         .startburst(qam_startburst),
-        .luma_filtered,
         .chroma(pal_ntsc_chroma),
         .debug_burst_u,
         .debug_burst_v
@@ -144,8 +152,8 @@ module composite_video_encoder (
     secam_encoder secam (
         .clk,
         .even_line,
-        .yuv_u(yuv_u_delayed),
-        .yuv_v(yuv_v_delayed),
+        .yuv_u(delayed.u),
+        .yuv_v(delayed.v),
         .debug_db_swing(secam_debug_db_swing),
         .debug_dr_swing(secam_debug_dr_swing),
         .carrier_period_delay(secam_debug_carrier_delay),
@@ -162,22 +170,16 @@ module composite_video_encoder (
     // integer overflows.
     bit [8:0] video_d;
     bit [8:0] video_q;
-    //bit [8:0] video;
-
 
     always_ff @(posedge clk) begin
         video_q <= video_d;
-        luma_q  <= luma;
-        yuv_u_q <= yuv_u;
-        yuv_v_q <= yuv_v;
+        in_q <= in;
 
         if (newframe) video_overflow <= 0;
         else if (video_d[8]) video_overflow <= 1;
 
         if (video_q[8]) video <= 0;
         else video <= video_q[7:0];
-
-
     end
 
     // Add everything together
@@ -189,7 +191,7 @@ module composite_video_encoder (
 
             if (!chroma_enable) begin
                 // Chroma is disabled. Add luma without low pass filter
-                video_d = luma_black_level + luma_delayed;
+                video_d = luma_black_level + delayed.y;
             end else begin
                 // Chroma is enable. Add luma with low pass filter
                 video_d = luma_black_level + luma_filtered;
@@ -201,6 +203,7 @@ module composite_video_encoder (
         end
     end
 
+    // Handle debug bus to allow configuratuion
     always_ff @(posedge clk) begin
         if (dbus.addr[15:8] == 8'h00 && dbus.write_enable) begin
             case (dbus.addr[7:0])
@@ -221,15 +224,6 @@ module composite_video_encoder (
                 default: ;
             endcase
         end
-
-        if (dbus.addr[15:8] == 8'h02 && dbus.write_enable) begin
-            case (dbus.addr[3:2])
-                0: y_scaler_mem[dbus.addr[1:0]] <= dbus.write_data;
-                1: u_scaler_mem[dbus.addr[1:0]] <= dbus.write_data;
-                2: v_scaler_mem[dbus.addr[1:0]] <= dbus.write_data;
-                default: ;
-            endcase
-        end
     end
 
     // Higher bit width variant of some filter to compare against
@@ -239,7 +233,7 @@ module composite_video_encoder (
     // verilator lint_off WIDTHEXPAND
     pal_verify_lumafilter lumafilter0_check (
         .clk(clk),
-        .in (luma_delayed),
+        .in (delayed.y),
         .out(luma_filtered_check)
     );
     // verilator lint_on WIDTHEXPAND

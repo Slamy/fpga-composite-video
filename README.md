@@ -2,6 +2,18 @@
 
 This project aims to implement an encoder on FPGA basis to convert a digital YUV signal to PAL/NTSC or SECAM composite video.
 
+After having started using a Xilinx Spartan-3AN in 2012, I've decided to port this project
+to the [Tang Nano 9K](https://wiki.sipeed.com/hardware/en/tang/Tang-Nano-9K/Nano-9K.html) as it is quite affordable, small and also
+usable for experimentation on a breadboard so it can be build by everyone.
+
+## Motivation
+
+* Learning more about IIR filters
+* Setting again a foot into FPGA development
+* Learning more about alternatives to Xilinx and Altera
+* Finding a smaller and cheaper FPGA to build the smallest color Pong machine possible
+* Old video signals are quite interesting
+
 ## Features
 
 * PAL and NTSC
@@ -24,6 +36,46 @@ This project aims to implement an encoder on FPGA basis to convert a digital YUV
     * DAC sample rate can be changed using configure.py
 * "Hardware in the Loop" testing using USB video grabber
 * Verilator testbench with PNG export of raw video data
+    * Verilator testbench also checks the IIR filters in lockstep against wider bit width
+
+## Project structure
+
+* rtl
+    * composite\_video\_encoder.sv (the CVBS encoder itself)
+    * top\_testpic\_generator.sv (example top level module for use with a framebuffer device)
+* sim
+    * sim_top.sh (execute Verilator model which produces a png file with raw video data)
+* gowin
+    * testpic\_gen.gprj.gprj (GOWIN EDA example project for Tang Nano 9K)
+* tools
+    * configure.py (calculates filter coefficients and direct digital synthesis parameters)
+    * debugcom.py (interface class to access registers using the UART busmaster)
+    * debugcom\_hil_ebu75.py (produces EBU75 color stripes using all video norms, captures and checks them using USB video grabber)
+    * debugcom\_hil_parrot.py (records a reference picture for comparsion)
+    * debugcom\_hil_all.py (produces a whole set of test results)
+    * debugcom\_imageviewer.py (transfers an image into the framebuffer for display)
+    * vlc\_\*.sh (helper functions to start VLC to show the input of the USB video grabber)
+
+
+## How to build
+
+Compared to other projects using GOWIN FPGAs, this is based on the official [GOWIN EDA](https://www.gowinsemi.com/en/support/download_eda/) synthesis tools.
+The free educational version should be sufficient here.
+Open `gowin/testpic_gen.gprj` and start the synthesis.
+
+## Implementation on hardware
+
+* Proven in use on [Tang Nano 9K](https://wiki.sipeed.com/hardware/en/tang/Tang-Nano-9K/Nano-9K.html) (based on GW1NR-9)
+    * 48 MHz sample rate
+    * GOWIN EDA (V1.9.9 Beta-6) used as Synthesis tool
+    * Uses 42% of logic elements for whole test picture generator project
+    * Should take only 20% of logic elements as about the half is spent on the PSRAM controller and the debugging interface
+    * Uses 68% of DSP units
+        * 3 MULT9X9
+        * 10 MULT18X18
+        * 1 ALU54D
+
+![Photo of bread board with Tang Nano 9K and DAC circuit](doc/circuit_photo.jpg)
 
 ## Example results
 
@@ -81,23 +133,6 @@ Here is the result, received from the USB video grabber:
 
 It doesn't look that bad but SECAM surely has problems with sharp edges when it comes to my implementation.
 
-## Project structure
-
-* rtl
-    * composite\_video\_encoder.sv (the CVBS encoder itself)
-    * top\_testpic\_generator.sv (example top level module for use with a framebuffer device)
-* sim
-    * sim_top.sh (execute Verilator model which produces a png file with raw video data)
-* gowin
-    * fpga\_pong.gprj (GOWIN EDA example project for Tang Nano 9K)
-* tools
-    * configure.py (calculates filter coefficients and direct digital synthesis parameters)
-    * debugcom.py (interface class to access registers using the UART busmaster)
-    * debugcom_hil_ebu75.py (produces EBU75 color stripes using all video norms, captures and checks them using USB video grabber)
-    * debugcom_hil_parrot.py (records a reference picture for comparsion)
-    * debugcom_imageviewer.py (transfers an image into the framebuffer for display)
-    * vlc_\*.sh (helper functions to start VLC to show the input of the USB video grabber)
-
 ## Used devices to verify produced video signal
 
 * Fushicai USBTV007 Video Grabber \[EasyCAP\] 1b71:3002
@@ -117,6 +152,12 @@ It doesn't look that bad but SECAM surely has problems with sharp edges when it 
 * [GTKWave](https://gtkwave.sourceforge.net/) to visualize Verilator results
 * [PyCharm](https://www.jetbrains.com/de-de/pycharm/) for the Python Code
 
+## Troubleshooting
+
+### The color hue of NTSC is off
+
+For some reason my USB video grabber has a 17 degree offset on the color burst. On my TV set this is not the case and the burst must occur with 0 degrees. Please use `configure.py` and set `ntsc_burst_amplitude` to 0 to fix this. The problem should then go away. I don't understand why I have this problem. Maybe someone else has an idea...
+
 ## TODOs
 
 * NTSC chroma artefacts very present at the moment
@@ -126,36 +167,18 @@ It doesn't look that bad but SECAM surely has problems with sharp edges when it 
 * Fixing SECAM (might be impossible due to lack of info)
 * Reduce 32 Bit Pixel format to something more compact (24 Bit)
 * Add schematic for external video DAC circuit
+* Add block diagram to show connections between components and overall architecture
 * HIL verify issues, OpenCV is not very consistent when capturing video footage
     * VLC is as bright as a 1084 but seems to change brightness on the fly.
     * Auto Gain Control on VLC and 1084 but not OpenCV?
 * Cleanup register map
 
-## Motivation
-
-* Learning more about IIR filters
-* Setting again a foot into FPGA development
-* Finding a smaller FPGA to build the smallest color Pong machine possible
-* Old video signals are quite interesting
-
-## Implementation on hardware
-
-* Proven in use on Tang Nano 9K (based on GW1NR-9)
-    * 48 MHz sample rate
-    * GOWIN EDA used as Synthesis tool
-    * Uses 42% of logic elements for whole test picture generator project
-    * Should take only 20% of logic elements as about the half is spent on the PSRAM controller and the debugging interface
-    * Uses 68% of DSP units
-        * 3 MULT9X9
-        * 10 MULT18X18
-        * 1 ALU54D
-
 ## Used Resources to create this
 
 System Verilog:
-* https://verificationguide.com/systemverilog/systemverilog-parameters-and-define/
 * [Style Guide for SystemVerilog Code](https://www.systemverilog.io/verification/styleguide/)
 * [lowRISC Verilog Coding Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md)
+* https://verificationguide.com/systemverilog/systemverilog-parameters-and-define/
 
 IIR filter design:
 * https://vhdlwhiz.com/part-2-finite-impulse-response-fir-filters/

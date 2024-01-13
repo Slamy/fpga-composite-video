@@ -1,3 +1,7 @@
+/*
+ * Collects a whole burst of octets to write into memory.
+ * Ensures efficient usage of memory controller bandwidth during larger memory writes.
+ */
 module burst_writer (
     input reset,
     input [7:0] data,

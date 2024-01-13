@@ -1,7 +1,7 @@
 `include "coefficients.svh"
 
 
-module pal_chroma_lowpass (
+module filter_pal_chroma_lowpass (
     input clk,
     input signed [5:0] in,
     output bit signed [5:0] out

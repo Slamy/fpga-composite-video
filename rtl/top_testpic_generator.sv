@@ -153,29 +153,23 @@ module top_testpic_generator (
         .even_field
     );
 
-    video_standard_e video_standard = SECAM;
-
-    bit [7:0] luma;
-    bit signed [7:0] yuv_u;
-    bit signed [7:0] yuv_v;
+    video_standard_e video_standard = PAL;
+    ycbcr_s cvbs_in;
 
     bit secam_enabled;
 
     composite_video_encoder cvbs (
         .clk,
-        .sync (sync),
+        .sync(sync),
         .newframe,
         .newline,
         .secam_enabled,
         .qam_startburst,
         .video_standard,
-        .yuv_u(yuv_u),
-        .yuv_v(yuv_v),
-        .luma (luma),
+        .in  (cvbs_in),
         .video,
         .video_overflow,
-        .dbus,
-        .even_field
+        .dbus
     );
     burst_bus_if fb_bus (clk);
 
@@ -185,39 +179,30 @@ module top_testpic_generator (
         .m1 (fb_bus)
     );
 
-    bit [7:0] fb_luma;
-    bit signed [7:0] fb_yuv_u;
-    bit signed [7:0] fb_yuv_v;
+    ycbcr_s fb_output;
+
 
     framebuffer fb (
-        .bus  (fb_bus),
+        .bus(fb_bus),
         .newframe,
         .newline,
         .even_field,
         .video_y,
         .video_x,
-        .luma (fb_luma),
-        .yuv_u(fb_yuv_u),
-        .yuv_v(fb_yuv_v),
+        .out(fb_output),
         .dbus
     );
 
-    bit [7:0] colorbars_luma;
-    bit signed [7:0] colorbars_yuv_u;
-    bit signed [7:0] colorbars_yuv_v;
+    ycbcr_s colorbars_output;
     bit colorbars_active = 1;
 
     rgbbars testpattern (
         .clk,
         .newline,
         .newpixel,
-        .video_y(video_y - 38),
-        .video_x,
-        .visible_line,
+        .video_y(8'(video_y - 9'(38))),
         .visible_window,
-        .luma(colorbars_luma),
-        .yuv_u(colorbars_yuv_u),
-        .yuv_v(colorbars_yuv_v)
+        .out(colorbars_output)
     );
 
     always_ff @(posedge clk) begin
@@ -250,22 +235,14 @@ module top_testpic_generator (
     );
 
     always_comb begin
-        luma = 0;
-        yuv_u = 0;
-        yuv_v = 0;
         secam_enabled = 0;
-
         if (video_y > 7) begin
             secam_enabled = 1;
         end
 
-        luma  = fb_luma;
-        yuv_u = fb_yuv_u;
-        yuv_v = fb_yuv_v;
+        cvbs_in = fb_output;
         if (colorbars_active) begin
-            luma  = colorbars_luma;
-            yuv_u = colorbars_yuv_u;
-            yuv_v = colorbars_yuv_v;
+            cvbs_in = colorbars_output;
         end
     end
 endmodule

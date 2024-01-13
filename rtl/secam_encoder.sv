@@ -71,7 +71,7 @@ module secam_encoder (
     always_ff @(posedge clk) begin
         carrier_period_maybe_filtered <= chroma_lowpass_enable ? carrier_period_filtered : carrier_period_modulate;
     end
-    
+
     filter_chroma_preemphasis_lowpass chlolo (
         .clk(clk),
         .in (carrier_period_maybe_filtered),
@@ -81,7 +81,7 @@ module secam_encoder (
     bit signed [12:0] carrier_period_emphasis2  /*verilator public_flat_rd*/;
     bit signed [12:0] carrier_period_emphasis2_delayed  /*verilator public_flat_rd*/;
 
-    delayfifo32 #(13) df (
+    delayfifo #(13) df (
         .clk,
         .in(carrier_period_emphasis2),
         .latency(carrier_period_delay),

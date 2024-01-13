@@ -1,17 +1,17 @@
+/*
+ * Generates 4 color bars according to the EBU standard.
+ * It expected 256 pixels per scanline equally clocked using newpixel.
+ */
+
 module rgbbars (
     input clk,
     input newline,
     input newpixel,
 
-    input [ 8:0] video_y,
-    input [12:0] video_x,
+    input [7:0] video_y,
 
-    input bit visible_line,
     input bit visible_window,
-
-    output bit [7:0] luma,
-    output bit signed [7:0] yuv_u,
-    output bit signed [7:0] yuv_v
+    output ycbcr_s out
 );
 
     bit [7:0] R_d;
@@ -21,18 +21,16 @@ module rgbbars (
     bit [7:0] G_q;
     bit [7:0] B_q;
 
-    bit [7:0] rgbconv_Y;
-    bit signed [7:0] rgbconv_Cb;
-    bit signed [7:0] rgbconv_Cr;
+    rgb_s rgb_conv_in;
+    assign rgb_conv_in.r = R_q;
+    assign rgb_conv_in.g = G_q;
+    assign rgb_conv_in.b = B_q;
+
 
     RGB2YCbCr rgb_conv (
         .clk,
-        .R (R_q),
-        .G (G_q),
-        .B (B_q),
-        .Y (rgbconv_Y),
-        .Cb(rgbconv_Cb),
-        .Cr(rgbconv_Cr)
+        .in (rgb_conv_in),
+        .out(out)
     );
 
     bit  [8:0] pixel_x = 0;
@@ -44,13 +42,9 @@ module rgbbars (
         if (newline) pixel_x <= 0;
         if (visible_window && newpixel) pixel_x <= pixel_x + 1;
 
-        luma  <= rgbconv_Y;
-        yuv_u <= rgbconv_Cb;
-        yuv_v <= rgbconv_Cr;
-
-        R_q   <= R_d;
-        G_q   <= G_d;
-        B_q   <= B_d;
+        R_q <= R_d;
+        G_q <= G_d;
+        B_q <= B_d;
     end
 
     always_comb begin

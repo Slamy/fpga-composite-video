@@ -1,3 +1,9 @@
+/*
+ * Data stream controlled debug bus master
+ * Can be remote controlled using a byte stream
+ * which could come from a UART or other sources.
+ * Reads from and writes to an address
+ */
 module debug_busmaster (
     input clk,
     input [7:0] i_com_data,
@@ -9,19 +15,19 @@ module debug_busmaster (
 );
 
     typedef enum bit [3:0] {
-        IDLE,
-        READ_ADDR0,
-        READ_ADDR1,
-        READ_DATA,
-        WRITE_ADDR0,
-        WRITE_ADDR1,
-        WRITE_DATA,
-        WRITE_DATA_PERFORM,
-        BLOCK_COUNT
+        IDLE,                // Waiting for input
+        READ_ADDR0,          // Expects high byte of address to read from
+        READ_ADDR1,          // Expects low byte of address to read from
+        READ_DATA,           // Reading from provided address
+        WRITE_ADDR0,         // Expects high byte of address to write to
+        WRITE_ADDR1,         // Expects low byte of address to write to
+        WRITE_DATA,          // Expects byte to write to address
+        WRITE_DATA_PERFORM,  // Doing the confgiured write operation
+        BLOCK_COUNT          // Next expected byte is the number of bytes to receive
     } states_e;
 
-    states_e state = IDLE;
-    states_e next_state;
+    states_e state_q = IDLE;
+    states_e state_d;
 
     bit [7:0] remaining_bytes = 0;
     bit decrement_remaining_bytes;
@@ -34,53 +40,53 @@ module debug_busmaster (
         dbus.write_enable = 0;
         o_com_strobe = 0;
         dbus.read_enable = 0;
-        next_state = state;
+        state_d = state_q;
         decrement_remaining_bytes = 0;
         set_remaining_bytes = 0;
 
         collect_adr_high = 0;
         collect_adr_low = 0;
 
-        case (state)
+        case (state_q)
             IDLE: begin
                 if (i_com_strobe) begin
                     if (i_com_data == "R") begin
-                        next_state = READ_ADDR0;
+                        state_d = READ_ADDR0;
                     end else if (i_com_data == "W") begin
-                        next_state = WRITE_ADDR0;
+                        state_d = WRITE_ADDR0;
                     end else if (i_com_data == "B") begin
-                        next_state = BLOCK_COUNT;
+                        state_d = BLOCK_COUNT;
                     end
                 end
             end
 
             BLOCK_COUNT:
             if (i_com_strobe) begin
-                next_state = WRITE_ADDR0;
+                state_d = WRITE_ADDR0;
                 set_remaining_bytes = 1;
             end
 
             WRITE_ADDR0:
             if (i_com_strobe) begin
-                next_state = WRITE_ADDR1;
+                state_d = WRITE_ADDR1;
                 collect_adr_high = 1;
             end
             WRITE_ADDR1:
             if (i_com_strobe) begin
-                next_state = WRITE_DATA;
+                state_d = WRITE_DATA;
                 collect_adr_low = 1;
             end
-            WRITE_DATA: if (i_com_strobe) next_state = WRITE_DATA_PERFORM;
+            WRITE_DATA: if (i_com_strobe) state_d = WRITE_DATA_PERFORM;
             WRITE_DATA_PERFORM: begin
                 dbus.write_enable = 1;
                 if (dbus.ready) begin
 
                     if (remaining_bytes == 0) begin
-                        next_state   = IDLE;
-                        o_com_data   = "K";
+                        state_d = IDLE;
+                        o_com_data = "K";
                         o_com_strobe = 1;
                     end else begin
-                        next_state = WRITE_DATA;
+                        state_d = WRITE_DATA;
                         decrement_remaining_bytes = 1;
                     end
 
@@ -89,19 +95,19 @@ module debug_busmaster (
 
             READ_ADDR0:
             if (i_com_strobe) begin
-                next_state = READ_ADDR1;
+                state_d = READ_ADDR1;
                 collect_adr_high = 1;
             end
             READ_ADDR1:
             if (i_com_strobe) begin
-                next_state = READ_DATA;
+                state_d = READ_DATA;
                 collect_adr_low = 1;
             end
             READ_DATA: begin
                 dbus.read_enable = 1;
 
                 if (dbus.read_data_valid) begin
-                    next_state   = IDLE;
+                    state_d = IDLE;
                     o_com_strobe = 1;
                 end
             end
@@ -118,9 +124,9 @@ module debug_busmaster (
 
         if (collect_adr_high) dbus.addr[15:8] <= i_com_data;
         if (collect_adr_low) dbus.addr[7:0] <= i_com_data;
-        if (i_com_strobe && state == WRITE_DATA) dbus.write_data <= i_com_data;
+        if (i_com_strobe && state_q == WRITE_DATA) dbus.write_data <= i_com_data;
 
-        state <= next_state;
+        state_q <= state_d;
     end
 
 

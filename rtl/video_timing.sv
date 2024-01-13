@@ -1,12 +1,14 @@
 `include "coefficients.svh"
 
-/* For PAL we have 625 lines in interlacing mode
+/* 
+ * Produces TV video timing and fitting sync signals.
+ *
+ * For PAL we have 625 lines in interlacing mode
  * Field 1 = Even Lines = 312 lines
  * Field 2 = Odd Lines = 313 lines
  * For non interlaced mode, it seems to be defined to use 312 lines.
  * Therefore we can implement non interlaced modes by just providing only even frames.
  */
-
 module video_timing (
     input clk,
     input [8:0] v_total,
@@ -36,7 +38,7 @@ module video_timing (
     bit [PixelPhaseAccu-1:0] pixel_counter_increment = 0;
     bit pixel_clock_accu_highest = 0;
 
-    bit sync_next;
+    bit sync_d;
 
     // Length of certain timing constants in clocks
     localparam bit [12:0] LineLength = 13'(integer'(64 / `CLK_PERIOD_USEC));  // 64 usec
@@ -65,8 +67,6 @@ module video_timing (
         int
         ticks_per_active_window = integer'(ActiveWindowStop) - integer'(ActiveWindowStart);
         pixel_counter_increment = PixelPhaseAccu'((2 ** PixelPhaseAccu)*256 / ticks_per_active_window);
-        //$display(ticks_per_active_window);
-        //$display(pixel_counter_increment);
         even_field = 1;
     end
 
@@ -89,7 +89,7 @@ module video_timing (
             if (visible_window) pixel_clock_accu <= pixel_clock_accu + pixel_counter_increment;
         end
 
-        sync <= sync_next;
+        sync <= sync_d;
         pixel_clock_accu_highest <= pixel_clock_accu[PixelPhaseAccu-1];
     end
 
@@ -109,8 +109,7 @@ module video_timing (
     assign visible_window = visible_window_q;
 
     always_comb begin
-
-        sync_next = 0;
+        sync_d = 0;
         startburst = 0;
         visible_line = 0;
         visible_window_d = 0;
@@ -135,30 +134,30 @@ module video_timing (
         if (timing_line) begin
             if (first_half_long_sync && second_half_long_sync) begin
                 // ______-______-
-                if (video_x < LongSync) sync_next = 1;
-                else if (video_x < HalfLineLength) sync_next = 0;
-                else if (video_x < (HalfLineLength + LongSync)) sync_next = 1;
+                if (video_x < LongSync) sync_d = 1;
+                else if (video_x < HalfLineLength) sync_d = 0;
+                else if (video_x < (HalfLineLength + LongSync)) sync_d = 1;
             end
 
             if (first_half_long_sync && !second_half_long_sync) begin
                 // ______-_------ for first and second line in even fields
-                if (video_x < LongSync) sync_next = 1;
-                else if (video_x < HalfLineLength) sync_next = 0;
-                else if (video_x < (HalfLineLength + ShortSync)) sync_next = 1;
+                if (video_x < LongSync) sync_d = 1;
+                else if (video_x < HalfLineLength) sync_d = 0;
+                else if (video_x < (HalfLineLength + ShortSync)) sync_d = 1;
             end
 
             if (!first_half_long_sync && second_half_long_sync) begin
                 // _------______- used only for field 2 in the first line
-                if (video_x < ShortSync) sync_next = 1;
-                else if (video_x < HalfLineLength) sync_next = 0;
-                else if (video_x < (HalfLineLength + LongSync)) sync_next = 1;
+                if (video_x < ShortSync) sync_d = 1;
+                else if (video_x < HalfLineLength) sync_d = 0;
+                else if (video_x < (HalfLineLength + LongSync)) sync_d = 1;
             end
 
             if (!first_half_long_sync && !second_half_long_sync) begin
                 // _------_------
-                if (video_x < ShortSync) sync_next = 1;
-                else if (video_x < HalfLineLength) sync_next = 0;
-                else if (video_x < (HalfLineLength + ShortSync)) sync_next = 1;
+                if (video_x < ShortSync) sync_d = 1;
+                else if (video_x < HalfLineLength) sync_d = 0;
+                else if (video_x < (HalfLineLength + ShortSync)) sync_d = 1;
             end
         end else begin
             // 256 visible lines starting at line 38
@@ -167,7 +166,7 @@ module video_timing (
                 if (video_x >= ActiveWindowStart && video_x <= ActiveWindowStop)
                     visible_window_d = 1;
             end
-            if (video_x < NormalSync) sync_next = 1;
+            if (video_x < NormalSync) sync_d = 1;
             if (video_x == BurstStart && video_y > 7) startburst = 1;
         end
     end

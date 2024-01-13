@@ -12,7 +12,7 @@ package common;
     } video_standard_e;
 endpackage
 
-
+// Burst based memory port suitable for PSRAM_HS_V2 IP core
 interface burst_bus_if (
     input clk
 );
@@ -37,7 +37,31 @@ interface burst_bus_if (
 
 endinterface
 
+// Digital RGB signal with 8 bit depth
+typedef struct {
+    bit [7:0] r;
+    bit [7:0] g;
+    bit [7:0] b;
+} rgb_s;
 
+// YUV signals according to PAL analog scaling
+typedef struct {
+    bit [7:0] y;
+    bit signed [7:0] u;
+    bit signed [7:0] v;
+} yuv_s;
+
+// YCbCr but as signed
+// Usually the "neutral" of Cb and Cr is 128 but here it is 0
+// with a swing of -127 to 127
+typedef struct {
+    bit [7:0] y;
+    bit signed [7:0] cb;
+    bit signed [7:0] cr;
+} ycbcr_s;
+
+
+// 16 Bit, single cycle bus
 interface debug_bus_if (
     input clk
 );
@@ -58,5 +82,4 @@ interface debug_bus_if (
         input clk, addr, write_enable, read_enable, write_data,
         output read_data_valid, read_data, ready
     );
-
 endinterface

@@ -1,7 +1,7 @@
 `include "coefficients.svh"
 
 
-module filter_pal_carrier (
+module filter_pal_ntsc_carrier (
     input clk,
     input signed [7:0] in,
     input pal_mode,
