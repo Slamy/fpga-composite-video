@@ -24,7 +24,7 @@ module composite_video_encoder (
     bit [5:0] debug_burst_v = `NTSC_BURST_V;  // TODO remove
     bit [7:0] secam_debug_db_swing = `CONFIG_SECAM_DB_SWING;
     bit [6:0] secam_debug_dr_swing = `CONFIG_SECAM_DR_SWING;
-    bit [4:0] secam_debug_carrier_delay = 20;
+    bit [4:0] secam_debug_carrier_delay = 0;
     bit chroma_lowpass_enable = 0;  // TODO remove
     bit chroma_bandpass_enable = 1;  // TODO remove
     bit chroma_enable = 1;

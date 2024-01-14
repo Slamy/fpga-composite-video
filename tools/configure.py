@@ -60,7 +60,7 @@ def print_filter(prefix, filter):
     file.write(f"`define {prefix}_B_AFTER_DOT {filter.b_after_dot}\n")
     file.write(f"`define {prefix}_A_AFTER_DOT {filter.a_after_dot}\n\n")
 
-
+# Band pass filter that ensures that the chroma signal doesn't bleed into the luma frequency range during transitions
 def generate_chroma_filter():
     b_after_dot = 5
     a_after_dot = 5
@@ -82,6 +82,7 @@ def generate_chroma_filter():
     print_filter("NTSC_CHROMA", fpfilter)
 
 
+# Protects the chroma signal from high frequencies in the luma signal
 def generate_pal_luma_filter():
     luma_stop = official_pal_frequency - 2e6
     print(f"luma_stop {luma_stop}")
@@ -93,6 +94,8 @@ def generate_pal_luma_filter():
     print_filter("PAL_LUMA_LOWPASS", fpfilter)
 
 
+# A SECAM chroma lowpass is described in the standard but I have the feeling
+# that it is not necessary.
 def generate_secam_chroma_lowpass_filter():
     b_after_dot = 11
     a_after_dot = 8
@@ -103,6 +106,9 @@ def generate_secam_chroma_lowpass_filter():
     print_filter("SECAM_CHROMA_LOWPASS", fpfilter)
 
 
+# I have to be honest here. I don't understand what I'm doing here.
+# There is no reference in the SECAM standard that a low pass of the amplitude is
+# even required. But still It improves the picture, so I'm doing that.
 def generate_secam_amplitude_lowpass_filter():
     b_after_dot = 11
     a_after_dot = 8
@@ -112,15 +118,20 @@ def generate_secam_amplitude_lowpass_filter():
     print_filter("SECAM_AMPLITUDE_LOWPASS", fpfilter)
 
 
+# I have to be honest here. I don't understand what I'm doing here.
+# This filter shall simulate the deemphasis inside the SECAM receiver.
 def generate_secam_preemphasis():
     b_after_dot = 11
-    a_after_dot = 8
-    sos = signal.bessel(1, 0.3e6, 'lp', fs=system_clock, output='sos')
+    a_after_dot = 11
+    sos = signal.bessel(1, 0.1e6, 'lp', fs=system_clock, output='sos')
     b, a = signal.sos2tf(sos)
     fpfilter = FpFilter(b, a, b_after_dot, a_after_dot)
     print_filter("SECAM_PREEMPHASIS", fpfilter)
 
-
+# I have to be honest here. I don't understand what I'm doing here.
+# The HF preemphasis provides a square function which, if implemented
+# according to the standard looks bad.
+# But I assume this correlates with the low pass filter that I use after the 8 bit DAC for smoothing the signals.
 def frequency_to_amplitude(x):
     center = 4.286
     x = x / 1000000

@@ -32,8 +32,8 @@ def interactive_configurator(single_line=False, interlacing_mode=False, rgb_mode
 
     # ampl_delay 4 u_delay 0 v_delay 7 secam_db_swing 56 secam_dr_swing 32
 
-    secam_db_swing = 54
-    secam_dr_swing = 22
+    secam_db_swing = 29
+    secam_dr_swing = 17
 
     while True:
         ntsc_burst_v = -round(ntsc_burst_amplitude * math.sin(math.radians(ntsc_burst_phase)))
@@ -183,5 +183,5 @@ def internal_colorbars_interactive():
 if __name__ == '__main__':
     # ebu75_interactive()
     # internal_colorbars_interactive()
-    parrot_interactive()
-    # secam_stresstest_interactive()
+    # parrot_interactive()
+    secam_stresstest_interactive()

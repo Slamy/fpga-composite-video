@@ -11,7 +11,7 @@
 #include <png.h>
 
 const int width = 0x0c00U;
-const int lines = 300;
+const int lines = 800;
 const int stretch = 1;
 const int height = lines * stretch;
 vluint64_t sim_time = 0;
@@ -87,8 +87,6 @@ int main(int argc, char **argv)
   dut.rootp->top_testpic_generator__DOT__clk = 1;
   dut.eval();
 
-  FILE *f = fopen("../tools/secam_carrier.txt", "w");
-
   for (int y = 0; y < lines; y++)
   {
     for (int x = 0; x < width; x++)
@@ -110,27 +108,8 @@ int main(int argc, char **argv)
         // output_image[y * width * stretch + width * j + x] = 127 + dut.rootp->top_testpic_generator__DOT__chroma;
         output_image[y * width * stretch + width * j + x] = dut.video;
       }
-
-#if 1
-      if (y == 40)
-      {
-        // fprintf(f, "%d %d %d\n", val1, val2, val3);
-
-        int16_t val1 = dut.rootp->top_testpic_generator__DOT__cvbs__DOT__secam__DOT__carrier_period_emphasis2;
-        uint16_t val2 = dut.rootp->top_testpic_generator__DOT__cvbs__DOT__secam__DOT__enabled_amplitude;
-        uint16_t val3 = dut.rootp->top_testpic_generator__DOT__cvbs__DOT__secam__DOT__enabled_amplitude_filtered;
-
-        val1 <<= 7;
-        val1 >>= 7;
-        if (dut.rootp->top_testpic_generator__DOT__video_timing0__DOT__visible_window_q)
-          fprintf(f, "%d %d %d\n", val1, val2, val3);
-
-        // fprintf(f, "%d\n", val1);
-      }
-#endif
     }
   }
-  fclose(f);
 
   write_png_file("raw_video.png");
 

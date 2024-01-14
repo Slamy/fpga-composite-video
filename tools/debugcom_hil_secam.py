@@ -27,9 +27,7 @@ def test_secam_stress():
     videonorm = "SECAM"
     height = framebuffer_easy_conf(debugcom, videonorm, interlacing_mode, rgb_mode, width, overscan=0)
     transfer_picture(debugcom, img, rgb_mode)
-    debugcom.set_delay_lines(0, 0, 6)
     frame = grab_and_store(videonorm)
-    debugcom.set_delay_lines(0, 0, 0)
 
     return frame
 

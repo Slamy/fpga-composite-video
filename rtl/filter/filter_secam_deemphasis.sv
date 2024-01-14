@@ -1,6 +1,6 @@
 `include "coefficients.svh"
 
-module filter_chroma_preemphasis_lowpass (
+module filter_secam_deemphasis (
     input clk,
     input signed [8:0] in,
     output bit signed [8:0] out
@@ -21,10 +21,10 @@ module filter_chroma_preemphasis_lowpass (
     localparam int APrecision = `SECAM_PREEMPHASIS_A_AFTER_DOT;
     localparam int BPrecision = `SECAM_PREEMPHASIS_B_AFTER_DOT;
 
-    bit signed [11:0] rz0_d;
+    bit signed [13:0] rz0_d;
     bit signed [ 9:0] lz0_d;
 
-    bit signed [11:0] rz0_q = 0;
+    bit signed [13:0] rz0_q = 0;
     bit signed [ 9:0] lz0_q = 0;
     bit signed [ 9:0] lz0_q2 = 0;
 
@@ -36,16 +36,22 @@ module filter_chroma_preemphasis_lowpass (
         end
     endfunction
 
-    bit signed [11:0] v;
-    bit signed [11:0] v_q;
+    function automatic int reduce2(input int value, input int shift);
+        begin
+            reduce2 = value >>> shift;
+        end
+    endfunction
+
+    bit signed [13:0] v;
+    bit signed [13:0] v_q;
     bit signed [ 9:0] y;
 
     bit signed [ 9:0] v0_mul_b0_d;
     bit signed [ 9:0] v0_mul_b0_q;
 
     always_comb begin
-        v = rz0_q + 11'(x);
-        rz0_d = 12'(reduce((A1 * v), APrecision));
+        v = rz0_q + 13'(x);
+        rz0_d = 14'(reduce2((A1 * v), APrecision));
 
         v0_mul_b0_d = 10'(reduce(B0 * v_q, BPrecision));
 

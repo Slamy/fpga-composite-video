@@ -8,11 +8,12 @@ usable for experimentation on a breadboard so it can be build by everyone.
 
 ## Motivation
 
-* Learning more about IIR filters
+* Learning more about IIR filters and their implementation in HDL
 * Setting again a foot into FPGA development
 * Learning more about alternatives to Xilinx and Altera
 * Finding a smaller and cheaper FPGA to build the smallest color Pong machine possible
 * Old video signals are quite interesting
+* Learning about Verilator
 
 ## Features
 
@@ -72,7 +73,7 @@ Open `gowin/testpic_gen.gprj` and start the synthesis.
     * Should take only 20% of logic elements as about the half is spent on the PSRAM controller and the debugging interface
     * Uses 68% of DSP units
         * 3 MULT9X9
-        * 10 MULT18X18
+        * 11 MULT18X18
         * 1 ALU54D
 
 ![Photo of bread board with Tang Nano 9K and DAC circuit](doc/circuit_photo.jpg)

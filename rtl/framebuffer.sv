@@ -96,7 +96,9 @@ module framebuffer (
     bit [4:0] fifo_read_pos_q = 0;  // current index of queue
     bit [3:0] fifo_write_pos = 0;  // next writing index
 
-    wire [3:0] fifo_free_entries = 4'b1111 - fifo_write_pos + fifo_read_pos[4:1];
+    wire [3:0] fifo_free_entries_d = 4'b1111 - fifo_write_pos + fifo_read_pos[4:1];
+    reg [3:0] fifo_free_entries_q;
+    always_ff @(posedge clk) fifo_free_entries_q <= fifo_free_entries_d;
 
     bit [31:0] pixel_data;  // data of current pixel to output
 
@@ -132,7 +134,7 @@ module framebuffer (
 
         // Don't read during active newline flag.
         // Address is currently calculated and available on next clock
-        if (fifo_free_entries >= 4 && !newline) bus.cmd_en = 1;
+        if (fifo_free_entries_q >= 4 && !newline) bus.cmd_en = 1;
     end
 
     // flag to prepare the fifo for the current line

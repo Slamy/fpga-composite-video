@@ -22,10 +22,8 @@ module secam_encoder (
     bit [ClockDivideLastBit:0] phase_increment_ampl;
     bit [4:0] carrier_phase;
 
-    bit signed [8:0] carrier_period_modulate  /*verilator public_flat_rd*/;
     bit [5:0] carrier_amplitude;
     bit [5:0] enabled_amplitude;
-
     secam_ampl ampl (
         .clk,
         .phase_inc(phase_increment_ampl),
@@ -39,6 +37,8 @@ module secam_encoder (
         .out(enabled_amplitude_filtered)
     );
 
+    bit signed [8:0] carrier_period_modulate;
+
     always_comb begin
         carrier_amplitude = 0;
         carrier_period_modulate = 0;
@@ -48,65 +48,67 @@ module secam_encoder (
         if (enabled) begin
             carrier_amplitude = enabled_amplitude_filtered;
 
+            // perform the mux as Db and Dr are transmitted line alternating
             if (even_line) begin
-                carrier_period_modulate = 9'(yuv_u);
+                carrier_period_modulate = 9'(yuv_u);  // Db or U
             end else begin
-                carrier_period_modulate = 9'(yuv_v);
+                carrier_period_modulate = 9'(yuv_v);  // Dr or V
             end
 
         end
     end
 
+    // optional low pass filter to remove high frequencies from the color difference signals.
+    // luckily for SECAM we need only one as only one component is transmitted per line
     bit signed [8:0] carrier_period_filtered  /*verilator public_flat_rd*/;
-    bit signed [8:0] carrier_period_emphasis  /*verilator public_flat_rd*/;
-    bit signed [8:0] carrier_period_clipped  /*verilator public_flat_rd*/;
-
-    filter_secam_chroma_lowpass chlo (
+    bit signed [8:0] carrier_period_deemphasis  /*verilator public_flat_rd*/;
+    filter_secam_chroma_lowpass carrier_lowpass (
         .clk(clk),
         .in (carrier_period_modulate),
         .out(carrier_period_filtered)
     );
-
+    // muxing, making the chroma lowpass optional
     bit signed [8:0] carrier_period_maybe_filtered = 0;
+
     always_ff @(posedge clk) begin
         carrier_period_maybe_filtered <= chroma_lowpass_enable ? carrier_period_filtered : carrier_period_modulate;
     end
 
-    filter_chroma_preemphasis_lowpass chlolo (
+    // perform internal deemphasis in a closed feedback loop
+    bit signed [12:0] carrier_period_emphasis;
+    filter_secam_deemphasis deemphasis (
         .clk(clk),
-        .in (carrier_period_maybe_filtered),
-        .out(carrier_period_emphasis)
+        .in (carrier_period_emphasis[12:4]),
+        .out(carrier_period_deemphasis)
     );
 
-    bit signed [12:0] carrier_period_emphasis2  /*verilator public_flat_rd*/;
-    bit signed [12:0] carrier_period_emphasis2_delayed  /*verilator public_flat_rd*/;
-
+    bit signed [12:0] carrier_period_emphasis_delayed;
     delayfifo #(13) df (
         .clk,
-        .in(carrier_period_emphasis2),
+        .in(carrier_period_emphasis),
         .latency(carrier_period_delay),
-        .out(carrier_period_emphasis2_delayed)
+        .out(carrier_period_emphasis_delayed)
     );
 
+    wire signed [12:0] err = 2 * (13'(carrier_period_maybe_filtered) - 13'(carrier_period_deemphasis));
 
+    // calculate emphasis swing using deemphasis result
     always_ff @(posedge clk) begin
-        if (even_line) begin
-            // Db or U
-            carrier_period_emphasis2 <= (13'(carrier_period_maybe_filtered)<<<4) + (debug_db_swing*(13'(carrier_period_maybe_filtered)-13'(carrier_period_emphasis)));
-        end else begin
-            // Dr or V
-            carrier_period_emphasis2 <= (13'(carrier_period_maybe_filtered)<<<4) + (debug_dr_swing*(13'(carrier_period_maybe_filtered)-13'(carrier_period_emphasis)));
-
+        if (even_line) begin  // Db or U
+            carrier_period_emphasis <= (debug_db_swing * err) + (13'(carrier_period_deemphasis)<<<4);
+        end else begin  // Dr or V
+            carrier_period_emphasis <= (debug_dr_swing * err) + (13'(carrier_period_deemphasis)<<<4);
         end
     end
 
+    // calculate the phase accumulator. perform frequency modulation
     always_ff @(posedge clk) begin
         if (even_line) begin
-            phase_increment_ampl    <=  `SECAM_CHROMA_DB_DDS_INCREMENT + (51'(carrier_period_emphasis2)<<<35);
-            phase_increment <=  `SECAM_CHROMA_DB_DDS_INCREMENT + (51'(carrier_period_emphasis2_delayed)<<<35);
+            phase_increment_ampl    <=  `SECAM_CHROMA_DB_DDS_INCREMENT + (51'(carrier_period_emphasis)<<<35);
+            phase_increment <=  `SECAM_CHROMA_DB_DDS_INCREMENT + (51'(carrier_period_emphasis_delayed)<<<35);
         end else begin
-            phase_increment_ampl <=  `SECAM_CHROMA_DR_DDS_INCREMENT - (51'(carrier_period_emphasis2)<<<35);
-            phase_increment <=  `SECAM_CHROMA_DR_DDS_INCREMENT - (51'(carrier_period_emphasis2_delayed)<<<35);
+            phase_increment_ampl <=  `SECAM_CHROMA_DR_DDS_INCREMENT - (51'(carrier_period_emphasis)<<<35);
+            phase_increment <=  `SECAM_CHROMA_DR_DDS_INCREMENT - (51'(carrier_period_emphasis_delayed)<<<35);
         end
     end
 
@@ -154,7 +156,7 @@ module secam_encoder (
         .b_precision(`SECAM_AMPLITUDE_LOWPASS_B_AFTER_DOT)
     );
 
-    filter_int_5tap chlo_check (
+    filter_int_5tap carrier_lowpass_check (
         .clk(clk),
         .in(carrier_period_modulate <<< 1),
         .out(carrier_period_filtered_check),
@@ -171,9 +173,10 @@ module secam_encoder (
         .b_precision(`SECAM_CHROMA_LOWPASS_B_AFTER_DOT)
     );
 
-    filter_int_5tap chlolo_check (
+
+    filter_int_5tap_floorA deemphasis_check (
         .clk(clk),
-        .in(carrier_period_maybe_filtered <<< 1),
+        .in((carrier_period_emphasis >>> 4) <<< 1),
         .out(carrier_period_emphasis_check),
         .b0(`SECAM_PREEMPHASIS_B0),
         .b1(`SECAM_PREEMPHASIS_B1),
@@ -204,8 +207,8 @@ module secam_encoder (
         if (carrier_period_filtered != carrier_period_filtered_check_q2) failed <= 1;
         assert (carrier_period_filtered == carrier_period_filtered_check_q2);
 
-        if (carrier_period_emphasis != carrier_period_emphasis_check_q2) failed <= 1;
-        assert (carrier_period_emphasis == carrier_period_emphasis_check_q2);
+        if (carrier_period_deemphasis != carrier_period_emphasis_check_q2) failed <= 1;
+        assert (carrier_period_deemphasis == carrier_period_emphasis_check_q2);
 
         if (enabled_amplitude_filtered != enabled_amplitude_filtered_check_q2) failed <= 1;
         assert (enabled_amplitude_filtered == enabled_amplitude_filtered_check_q2);

@@ -17,7 +17,7 @@
         <File path="../rtl/debug_busmaster.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/delayfifo.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/ebu75.sv" type="file.verilog" enable="1"/>
-        <File path="../rtl/filter/filter_chroma_preemphasis_lowpass.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/filter/filter_secam_deemphasis.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/filter/filter_pal_ntsc_carrier.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/filter/filter_pal_luma.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/filter/filter_secam_amplitude_lowpass.sv" type="file.verilog" enable="1"/>
