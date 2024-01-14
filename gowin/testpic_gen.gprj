@@ -39,7 +39,7 @@
         <File path="../rtl/uart_rx.v" type="file.verilog" enable="1"/>
         <File path="../rtl/uart_tx.v" type="file.verilog" enable="1"/>
         <File path="../rtl/video_timing.sv" type="file.verilog" enable="1"/>
-        <File path="src/fpga_pong.cst" type="file.cst" enable="1"/>
-        <File path="src/fpga_pong.sdc" type="file.sdc" enable="1"/>
+        <File path="src/testpic_gen.cst" type="file.cst" enable="1"/>
+        <File path="src/testpic_gen.sdc" type="file.sdc" enable="1"/>
     </FileList>
 </Project>

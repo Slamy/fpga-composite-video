@@ -10,7 +10,22 @@ from v4l import video_device, capture_still_frame
 debugcom = DebugCom()
 
 
-def construct_ebu(l):
+def construct_ebu_reference(l):
+    reference = []
+
+    reference.append(color.rgb2ycbcr(l, l, l))  # White
+    reference.append(color.rgb2ycbcr(l, l, 0))  # Yellow
+    reference.append(color.rgb2ycbcr(0, l, l))  # Cyan
+    reference.append(color.rgb2ycbcr(0, l, 0))  # Green
+    reference.append(color.rgb2ycbcr(l, 0, l))  # Purple
+    reference.append(color.rgb2ycbcr(l, 0, 0))  # Red
+    reference.append(color.rgb2ycbcr(0, 0, l))  # Blue
+    reference.append(color.rgb2ycbcr(0, 0, 0))  # Black
+
+    return reference
+
+
+def construct_ebu_scanline(l):
     imga = np.zeros([2, 256, 3], dtype=np.uint8)
 
     y = 0
@@ -26,14 +41,14 @@ def construct_ebu(l):
 
 
 def construct_ebu75():
-    return construct_ebu(191)
+    return construct_ebu_scanline(191)
 
 
 def construct_ebu100():
-    return construct_ebu(255)
+    return construct_ebu_scanline(255)
 
 
-def grab_and_check_ebu75(videonorm):
+def grab_and_check_ebu75(videonorm, rgb_value):
     debugcom.configure_video_standard(videonorm, video_device=video_device)
     frame = capture_still_frame()[50:200, :]
 
@@ -49,18 +64,38 @@ def grab_and_check_ebu75(videonorm):
     black = list(np.flip(frame_avg[70, 633]))
     # R G B
 
-    results = [white, yellow, cyan, green, purple, red, blue, black]
-    print(f"{videonorm}:")
-    print(f"White {white}")
-    print(f"Yellow {yellow}")
-    print(f"Cyan {cyan} {color.rgb2ycbcr(cyan[0], cyan[1], cyan[2])}")
-    print(f"Green {green} {color.rgb2ycbcr(green[0], green[1], green[2])}")
-    print(f"Purple {purple} {color.rgb2ycbcr(purple[0], purple[1], purple[2])}")
-    print(f"Red {red}")
-    print(f"Blue {blue}")
-    print(f"Black {black}")
+    results_rgb = [white, yellow, cyan, green, purple, red, blue, black]
+    results_ycbcr = [color.rgb2ycbcr(x[0], x[1], x[2]) for x in results_rgb]
+    results_deviation = []
+    reference_ycbcr = construct_ebu_reference(rgb_value)
+    names = ["White", "Yellow", "Cyan", "Green", "Purple", "Red", "Blue", "Black"]
 
-    return frame, results
+    print(f"{videonorm:>8}: | RsR RsG RsB | ResY ResU ResV | RefY RefU RefV | DevY DevU DevV |")
+
+    u_dev_list= []
+    v_dev_list= []
+
+    for i in range(len(results_rgb)):
+        y_dev = results_ycbcr[i][0] - reference_ycbcr[i][0]
+        u_dev = results_ycbcr[i][1] - reference_ycbcr[i][1]
+        v_dev = results_ycbcr[i][2] - reference_ycbcr[i][2]
+        u_dev_list.append(abs(u_dev))
+        v_dev_list.append(abs(v_dev))
+
+        results_deviation.append((y_dev, u_dev, v_dev))
+        print(f"{names[i]:>9} | "
+              f"{results_rgb[i][0]:>3} {results_rgb[i][1]:>3} {results_rgb[i][2]:>3} | "
+              f"{results_ycbcr[i][0]:>4} {results_ycbcr[i][1]:>4} {results_ycbcr[i][2]:>4} | "
+              f"{reference_ycbcr[i][0]:>4} {reference_ycbcr[i][1]:>4} {reference_ycbcr[i][2]:>4} | "
+              f"{results_deviation[i][0]:>4} {results_deviation[i][1]:>4} {results_deviation[i][2]:>4} | ")
+
+    u_dev_avg = sum(u_dev_list)/len(u_dev_list)
+    v_dev_avg = sum(v_dev_list)/len(v_dev_list)
+
+    print("                                                                 " 
+          f"{round(u_dev_avg):>4} {round(v_dev_avg):>4}")
+
+    return frame, results_rgb
 
 
 def test_colorbars():
@@ -78,22 +113,22 @@ def test_colorbars():
     debugcom.enable_interlacing(interlacing_mode)
     debugcom.enable_rgb_mode(rgb_mode)
 
-    print("----- 100% -----")
+    print("-------------------- 100% --------------------")
     imga = construct_ebu100()
     transfer_picture(debugcom, imga, rgb_mode)
-    ntsc_frame, ntsc_result_100 = grab_and_check_ebu75("NTSC")
-    pal_frame, pal_result_100 = grab_and_check_ebu75("PAL")
+    ntsc_frame, ntsc_result_100 = grab_and_check_ebu75("NTSC", 255)
+    pal_frame, pal_result_100 = grab_and_check_ebu75("PAL", 255)
     debugcom.set_delay_lines(0, 0, 3)
-    secam_frame, secam_result_100 = grab_and_check_ebu75("SECAM")
+    secam_frame, secam_result_100 = grab_and_check_ebu75("SECAM", 255)
     debugcom.set_delay_lines(0, 0, 0)
     ebu100concat = cv2.vconcat([ntsc_frame, pal_frame, secam_frame])
-    print("-----  75% -----")
+    print("--------------------  75% --------------------")
     imga = construct_ebu75()
     transfer_picture(debugcom, imga, rgb_mode)
-    ntsc_frame, ntsc_result_75 = grab_and_check_ebu75("NTSC")
-    pal_frame, pal_result_75 = grab_and_check_ebu75("PAL")
+    ntsc_frame, ntsc_result_75 = grab_and_check_ebu75("NTSC", 191)
+    pal_frame, pal_result_75 = grab_and_check_ebu75("PAL", 191)
     debugcom.set_delay_lines(0, 0, 3)
-    secam_frame, secam_result_75 = grab_and_check_ebu75("SECAM")
+    secam_frame, secam_result_75 = grab_and_check_ebu75("SECAM", 191)
     debugcom.set_delay_lines(0, 0, 0)
     ebu75concat = cv2.vconcat([ntsc_frame, pal_frame, secam_frame])
 
