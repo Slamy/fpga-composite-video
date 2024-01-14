@@ -14,7 +14,7 @@ module composite_video_encoder (
     input                           qam_startburst,  // Starts PAL/NTSC burst
     input                           secam_enabled,   // Activates SECAM carrier
     input  video_standard_e         video_standard,  // PAL, NTSC or SECAM
-    input  ycbcr_s                  in,              // Digital video input
+    input  ycbcr_t                  in,              // Digital video input
     output bit                [7:0] video,           // Analog video output
     output bit                      video_overflow,  // If 1, then mixing error occured
            debug_bus_if.slave       dbus             // Debug interface
@@ -29,7 +29,7 @@ module composite_video_encoder (
     bit chroma_bandpass_enable = 1;  // TODO remove
     bit chroma_enable = 1;
 
-    ycbcr_s in_q;
+    ycbcr_t in_q;
 
     bit [7:0] luma_black_level = 52;
     /* TODO for GOWIN support
@@ -40,8 +40,8 @@ module composite_video_encoder (
     bit signed [7:0] u_scaler_mem[4]  /* synthesis syn_ramstyle = "registers" */;
     bit signed [7:0] v_scaler_mem[4]  /* synthesis syn_ramstyle = "registers" */;
 
-    yuv_s scaler;
-    yuv_s scaled;
+    yuv_t scaler;
+    yuv_t scaled;
 
     initial begin
         video_overflow  = 0;
@@ -88,7 +88,7 @@ module composite_video_encoder (
     bit [4:0] yuv_u_delay_duration = 0;
     bit [4:0] yuv_v_delay_duration = 0;
 
-    yuv_s delayed;
+    yuv_t delayed;
 
     delayfifo #(8) dfy (
         .clk,

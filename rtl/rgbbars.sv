@@ -11,7 +11,7 @@ module rgbbars (
     input [7:0] video_y,
 
     input bit visible_window,
-    output ycbcr_s out
+    output ycbcr_t out
 );
 
     bit [7:0] R_d;
@@ -21,7 +21,7 @@ module rgbbars (
     bit [7:0] G_q;
     bit [7:0] B_q;
 
-    rgb_s rgb_conv_in;
+    rgb_t rgb_conv_in;
     assign rgb_conv_in.r = R_q;
     assign rgb_conv_in.g = G_q;
     assign rgb_conv_in.b = B_q;

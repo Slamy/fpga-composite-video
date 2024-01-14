@@ -1,6 +1,6 @@
 `include "coefficients.svh"
 
-/* 
+/*
  * PAL NTSC color carrier generator
  */
 module pal_ntsc_encoder (

@@ -1,6 +1,6 @@
 `include "coefficients.svh"
 
-/* 
+/*
  * Produces TV video timing and fitting sync signals.
  *
  * For PAL we have 625 lines in interlacing mode

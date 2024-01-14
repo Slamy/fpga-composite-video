@@ -154,7 +154,7 @@ module top_testpic_generator (
     );
 
     video_standard_e video_standard = PAL;
-    ycbcr_s cvbs_in;
+    ycbcr_t cvbs_in;
 
     bit secam_enabled;
 
@@ -179,7 +179,7 @@ module top_testpic_generator (
         .m1 (fb_bus)
     );
 
-    ycbcr_s fb_output;
+    ycbcr_t fb_output;
 
 
     framebuffer fb (
@@ -193,7 +193,7 @@ module top_testpic_generator (
         .dbus
     );
 
-    ycbcr_s colorbars_output;
+    ycbcr_t colorbars_output;
     bit colorbars_active = 1;
 
     rgbbars testpattern (

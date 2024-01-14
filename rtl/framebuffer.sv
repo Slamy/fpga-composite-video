@@ -12,7 +12,7 @@ module framebuffer (
     input [ 8:0] video_y,     // Scanline number
     input [12:0] video_x,     // Clock ticks since start of line
 
-    output ycbcr_s out  // digital video output as YCbCr
+    output ycbcr_t out  // digital video output as YCbCr
 );
     wire clk = bus.clk;
 
@@ -102,8 +102,8 @@ module framebuffer (
 
     bit [31:0] pixel_data;  // data of current pixel to output
 
-    ycbcr_s rgb_conv_out;
-    rgb_s rgb_conv_in;
+    ycbcr_t rgb_conv_out;
+    rgb_t rgb_conv_in;
     RGB2YCbCr rgb_conv (
         .clk,
         .in (rgb_conv_in),
@@ -169,7 +169,7 @@ module framebuffer (
 
             if (debug_line_mode) begin
                 // If the line mode is active,
-                // we want to start from the same address 
+                // we want to start from the same address
                 read_addr <= start_addr_even_field;
             end else begin
                 // Otherwise add the stride to proceed to the next lines location

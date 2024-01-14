@@ -42,14 +42,14 @@ typedef struct {
     bit [7:0] r;
     bit [7:0] g;
     bit [7:0] b;
-} rgb_s;
+} rgb_t;
 
 // YUV signals according to PAL analog scaling
 typedef struct {
     bit [7:0] y;
     bit signed [7:0] u;
     bit signed [7:0] v;
-} yuv_s;
+} yuv_t;
 
 // YCbCr but as signed
 // Usually the "neutral" of Cb and Cr is 128 but here it is 0
@@ -58,7 +58,7 @@ typedef struct {
     bit [7:0] y;
     bit signed [7:0] cb;
     bit signed [7:0] cr;
-} ycbcr_s;
+} ycbcr_t;
 
 
 // 16 Bit, single cycle bus

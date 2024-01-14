@@ -5,8 +5,8 @@ import common::*;
  */
 module RGB2YCbCr (
     input clk,
-    input rgb_s in,
-    output ycbcr_s out
+    input rgb_t in,
+    output ycbcr_t out
 )  /* synthesis syn_dspstyle = "logic" */;
 
     bit [7:0] Y_temp1;
