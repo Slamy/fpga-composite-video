@@ -57,6 +57,9 @@ usable for experimentation on a breadboard so it can be build by everyone.
     * debugcom\_imageviewer.py (transfers an image into the framebuffer for display)
     * vlc\_\*.sh (helper functions to start VLC to show the input of the USB video grabber)
 
+## Architecture
+
+![System architecture of the encoder unit](doc/block_diagram.svg)
 
 ## How to build
 
@@ -169,7 +172,6 @@ For some reason my USB video grabber has a 17 degree offset on the color burst. 
 * Ask GOWIN support for help with synthesis problems
 * Fixing SECAM (might be impossible due to lack of info)
 * Reduce 32 Bit Pixel format to something more compact (24 Bit)
-* Add block diagram to show connections between components and overall architecture
 * HIL verify issues, OpenCV is not very consistent when capturing video footage
     * VLC is as bright as a 1084 but seems to change brightness on the fly.
     * Auto Gain Control on VLC and 1084 but not OpenCV?
