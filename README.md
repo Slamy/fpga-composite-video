@@ -78,6 +78,8 @@ Open `gowin/testpic_gen.gprj` and start the synthesis.
 
 ![Photo of bread board with Tang Nano 9K and DAC circuit](doc/circuit_photo.jpg)
 
+![Schematic of external video DAC](kicad/circuit/circuit.svg)
+
 ## Example results
 
 ### Picture of a parrot
@@ -157,7 +159,7 @@ It doesn't look that bad but SECAM surely has problems with sharp edges when it 
 
 ### The color hue of NTSC is off
 
-For some reason my USB video grabber has a 17 degree offset on the color burst. On my TV set this is not the case and the burst must occur with 0 degrees. Please use `configure.py` and set `ntsc_burst_amplitude` to 0 to fix this. The problem should then go away. I don't understand why I have this problem. Maybe someone else has an idea...
+For some reason my USB video grabber has a 17 degree offset on the color burst. On my TV set this is not the case and the burst must occur with 0 degrees. Please use `configure.py` and set `ntsc_burst_phase` to 0 to fix this. The problem should then go away. I don't understand why I have this problem. Maybe someone else has an idea...
 
 ## TODOs
 
@@ -167,7 +169,6 @@ For some reason my USB video grabber has a 17 degree offset on the color burst. 
 * Ask GOWIN support for help with synthesis problems
 * Fixing SECAM (might be impossible due to lack of info)
 * Reduce 32 Bit Pixel format to something more compact (24 Bit)
-* Add schematic for external video DAC circuit
 * Add block diagram to show connections between components and overall architecture
 * HIL verify issues, OpenCV is not very consistent when capturing video footage
     * VLC is as bright as a 1084 but seems to change brightness on the fly.

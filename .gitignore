@@ -9,3 +9,5 @@
 /sim/raw_video.png
 /tools/secam_carrier.txt
 /gowin/testpic_gen.gprj.user
+/kicad/circuit/circuit-backups
+/kicad/circuit/fp-info-cache
