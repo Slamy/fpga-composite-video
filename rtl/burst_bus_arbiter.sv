@@ -20,7 +20,6 @@ module burst_bus_arbiter (
         end
     end
 
-
     always_comb begin
         m1.rd_data_valid = 0;
         m2.rd_data_valid = 0;

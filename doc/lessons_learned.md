@@ -1,5 +1,22 @@
 # Lessons learned
 
+## PSRAM in GOWIN FPGAs is weird
+
+* There are two PSRAM inside the GW1NR-9
+* One PSRAM has an 8 bit data bus
+* The PSRAM is addressed in words of 16 bit
+* On the side of PSRAM_Memory_Interface_HS_V2, the addresses are in 32 bit words which probably results from its dual channel nature as two PSRAMs are fused into one.
+* The smallest burst length is 16 bytes
+* With two RAMs this results into a burst of
+    * 16 bytes * 2 RAMs = 256 bits on the RAM bus
+    * 64 bits * 4 clocks = 256 bits on the PSRAM memory controller
+* The smallest addressable element from user logic view is a 32 bit word
+* With 32 bits per pixel the smallest addressable element is a pixel
+    * A burst consists of 8 pixels
+* Because of the wrapped burst nature of the PSRAM, every memory access shall be started aligned to 8 pixels / 16 bytes
+    * If this is not followed, weird wrap-arounds are visible in the picture
+* The framebuffer device should discard the non wanted pixels at the start of the line
+
 ## Resetting of the QAM phase accumulator on a new frame or field is a bad idea
 
 I first thought this might improve the pixel stability as dot crawl will no longer occur.

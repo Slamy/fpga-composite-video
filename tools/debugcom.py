@@ -50,7 +50,7 @@ class DebugCom:
         readback = self.serial.read()
         assert (readback == b'K')
 
-    def memwrite_u16be(self, addr, val):
+    def memwrite_u16be(self, addr, val: int):
         self.memwrite_u8(addr, (val >> 8) & 0xff)
         self.memwrite_u8(addr + 1, (val >> 0) & 0xff)
 
@@ -100,16 +100,32 @@ class DebugCom:
         if video_device:
             assert os.system(f"v4l2-ctl -d {video_device} -s {standard}") == 0
 
-    def configure_framebuffer(self, width, lines_per_field, interlacing_mode, clks_per_pixel=None):
+    def configure_framebuffer(self, width, lines_per_field, interlacing_mode, bits_per_pixel, clks_per_pixel=None):
         active_window_ticks = 3 * (768 + 16)
         if clks_per_pixel is None:
             clks_per_pixel = math.floor(active_window_ticks / width)
 
         height = lines_per_field * 2 if interlacing_mode else lines_per_field
-        stride = width * 4 if interlacing_mode else width * 2
+
+        if bits_per_pixel == 24:
+            stride = width * 3 / 4
+            assert stride.is_integer()
+            stride = int(stride)
+            self.enable_convolver_passthrough(0)
+        elif bits_per_pixel == 32:
+            stride = width
+            self.enable_convolver_passthrough(1)
+        else:
+            assert False, f"{bits_per_pixel} is not allowed. Either 24 or 32 bits per pixel!"
+
         # Move framebuffer away from calibration addresses
         even_field_addr = 0x500
-        odd_field_addr = even_field_addr + width * 2
+        odd_field_addr = even_field_addr + stride
+
+        # Double stride for interlacing so every other line is skipped
+        # during field readout
+        if interlacing_mode:
+            stride = stride * 2
 
         self.memwrite_u16be(0x0300, width)  # Width
         self.memwrite_u16be(0x0302, lines_per_field)  # Height of a single field
@@ -121,6 +137,7 @@ class DebugCom:
         self.memwrite_u8(0x030e, 30)  # Window V Start in lines
 
         print(f"Framebuffer size {width} * {height} with {clks_per_pixel} clock ticks per pixel")
+        print(f"Use a stride of {stride}")
 
         return height
 
@@ -197,9 +214,19 @@ class DebugCom:
         self.config_flags = set_bit(self.config_flags, 6, v)
         self.memwrite_u8(6, self.config_flags)
 
-    def logic_analyzer_read(self):
+    def enable_convolver_passthrough(self, v):
+        self.config_flags = set_bit(self.config_flags, 7, v)
+        self.memwrite_u8(6, self.config_flags)
 
-        position = self.memread(256) >> 1
+    def logic_analyzer_read(self):
+        status = self.memread(0x100)
+        if (status & 1):
+            print("Trigger activated!")
+        else:
+            print("Collecting...")
+
+        print(f"Measurement {self.memread(0x101)}")
+        position = status >> 1
         print(position)
 
         for j in range(64):

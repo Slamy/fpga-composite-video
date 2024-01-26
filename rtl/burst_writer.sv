@@ -42,7 +42,7 @@ module burst_writer (
             mem.cmd_en <= cmd_en_d;
             burst_data_read_adr_q <= burst_data_read_adr_d;
 
-            if (increment_burst_addr) mem.addr <= mem.addr + 16;
+            if (increment_burst_addr) mem.addr <= mem.addr + 8;
         end
     end
 

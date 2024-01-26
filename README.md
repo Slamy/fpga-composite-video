@@ -28,6 +28,7 @@ usable for experimentation on a breadboard so it can be build by everyone.
     * Interlaced and non-interlaced mode (eg. 625 line PAL or 312 line PAL)
 * Comes with framebuffer device for bitmap test pictures.
     * Optional internal RGB to YCbCr conversion
+    * Reads 24 bit and 32 bit pixel format
 * Optional delay lines to match luma and chroma filter delays.
 * Uses 8 bit R2R ladder as digital analog converter.
 * Uses direct digital synthesis for color carrier sine wave generation.
@@ -171,7 +172,6 @@ For some reason my USB video grabber has a 17 degree offset on the color burst. 
 * Reduce amount of used DSPs
 * Ask GOWIN support for help with synthesis problems
 * Fixing SECAM (might be impossible due to lack of info)
-* Reduce 32 Bit Pixel format to something more compact (24 Bit)
 * HIL verify issues, OpenCV is not very consistent when capturing video footage
     * VLC is as bright as a 1084 but seems to change brightness on the fly.
     * Auto Gain Control on VLC and 1084 but not OpenCV?

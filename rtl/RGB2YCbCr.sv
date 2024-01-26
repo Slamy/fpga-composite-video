@@ -1,3 +1,5 @@
+`include "common.svh"
+
 import common::*;
 
 /*

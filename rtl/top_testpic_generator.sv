@@ -1,4 +1,5 @@
 `include "coefficients.svh"
+`include "common.svh"
 
 import common::*;
 
@@ -46,14 +47,13 @@ module top_testpic_generator (
     burst_bus_if debug_mem_bus (clk);
 
     wire calib;
-    bit  ram_resetn = 0;
 
     PSRAM_Memory_Interface_HS_V2_Top u_psram_top (
         .clk_d(clkoutd_o),  //input clk_d
         .memory_clk(clk96),  //input memory_clk
         .memory_clk_p(clk96_p),  //input memory_clk_p
         .pll_lock(lock_o),  //input pll_lock
-        .rst_n(ram_resetn),  //input rst_n
+        .rst_n(1'b1),  //input rst_n
         .O_psram_ck(O_psram_ck),  //output [1:0] O_psram_ck
         .O_psram_ck_n(O_psram_ck_n),  //output [1:0] O_psram_ck_n
         .IO_psram_dq(IO_psram_dq),  //inout [15:0] IO_psram_dq
@@ -70,11 +70,6 @@ module top_testpic_generator (
         .clk_out(clk),  //output clk_out
         .data_mask(mem_bus.data_mask)  //input [7:0] data_mask
     );
-
-    always_ff @(posedge clk96) begin
-        // disable reset after PLL is locked
-        if (lock_o) ram_resetn <= 1;
-    end
 
     bit [5:0] cycle = 0;  // 14 cycles between write and read
     bit busy = 0;

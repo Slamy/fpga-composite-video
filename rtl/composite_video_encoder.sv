@@ -1,4 +1,6 @@
 `include "configuration.svh"
+`include "common.svh"
+`include "coefficients.svh"
 
 import common::*;
 
@@ -36,25 +38,18 @@ module composite_video_encoder (
      * Something here is wrong. It is required to set the ram style
      * to "registers" to allow initialization. Otherwise it is all zeroes.
      */
-    bit [7:0] y_scaler_mem[4]  /* synthesis syn_ramstyle = "registers" */;
-    bit signed [7:0] u_scaler_mem[4]  /* synthesis syn_ramstyle = "registers" */;
-    bit signed [7:0] v_scaler_mem[4]  /* synthesis syn_ramstyle = "registers" */;
+    bit [7:0] y_scaler_mem[4]  /* synthesis syn_ramstyle = "registers" */ = {
+        `CONFIG_PAL_Y_SCALER, `CONFIG_NTSC_Y_SCALER, `CONFIG_SECAM_Y_SCALER, 0
+    };
+    bit signed [7:0] u_scaler_mem[4]  /* synthesis syn_ramstyle = "registers" */ = {
+        `CONFIG_PAL_U_SCALER, `CONFIG_NTSC_U_SCALER, `CONFIG_SECAM_U_SCALER, 0
+    };
+    bit signed [7:0] v_scaler_mem[4]  /* synthesis syn_ramstyle = "registers" */ = {
+        `CONFIG_PAL_V_SCALER, `CONFIG_NTSC_V_SCALER, `CONFIG_SECAM_V_SCALER, 0
+    };
 
     yuv_t scaler;
     yuv_t scaled;
-
-    initial begin
-        video_overflow  = 0;
-        y_scaler_mem[0] = `CONFIG_PAL_Y_SCALER;
-        y_scaler_mem[1] = `CONFIG_NTSC_Y_SCALER;
-        y_scaler_mem[2] = `CONFIG_SECAM_Y_SCALER;
-        u_scaler_mem[0] = `CONFIG_PAL_U_SCALER;
-        u_scaler_mem[1] = `CONFIG_NTSC_U_SCALER;
-        u_scaler_mem[2] = `CONFIG_SECAM_U_SCALER;
-        v_scaler_mem[0] = `CONFIG_PAL_V_SCALER;
-        v_scaler_mem[1] = `CONFIG_NTSC_V_SCALER;
-        v_scaler_mem[2] = `CONFIG_SECAM_V_SCALER;
-    end
 
     // Handle debug bus for scaler configuration configuratuion
     always_ff @(posedge clk) begin

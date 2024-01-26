@@ -1,3 +1,5 @@
+`include "common.svh"
+import common::*;
 /*
  * Generates 4 color bars according to the EBU standard.
  * It expected 256 pixels per scanline equally clocked using newpixel.

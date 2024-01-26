@@ -3,7 +3,6 @@ module memory_tester (
     burst_bus_if.master mem,
     output bit error
 );
-
     bit [7:0] cnt = 0;
     bit [7:0] state_d;
     bit [7:0] state_q = 0;

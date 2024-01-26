@@ -49,6 +49,8 @@ module PSRAM_Memory_Interface_HS_V2_Top (
     bit cmd_latch = 0;
     bit [7:0] memory [0:1024*1024];
 
+    int returnvalue=0;
+
     always_ff @(posedge clk_out) begin
         if (cmd_en && !active) begin
 
@@ -70,14 +72,24 @@ module PSRAM_Memory_Interface_HS_V2_Top (
         end
         
         if (active)
-            cycle <= cycle +1;
+            cycle <= cycle + 1;
 
         if (cycle==13)begin
             active <= 0;
             //$display("Complete"); 
         end
-        rd_data[7:0] <= 8'(cycle);
+        rd_data[63:56] <= 8'(returnvalue+0);
+        rd_data[55:48] <= 8'(returnvalue+1);
+        rd_data[47:40] <= 8'(returnvalue+2);
+        rd_data[39:32] <= 8'(returnvalue+3);
+        rd_data[31:24] <= 8'(returnvalue+4);
+        rd_data[23:16] <= 8'(returnvalue+5);
+        rd_data[15:8] <= 8'(returnvalue+6);
+        rd_data[7:0] <= 8'(returnvalue+7);
         
+        if (cycle>=8 && cycle<=11)
+            returnvalue <= returnvalue+8;
+
         if (cycle==8+4)rd_data_valid <= 0;
         if (cycle==8) begin
             if (!cmd_latch) begin

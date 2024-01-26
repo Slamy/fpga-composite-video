@@ -60,6 +60,7 @@ def print_filter(prefix, filter):
     file.write(f"`define {prefix}_B_AFTER_DOT {filter.b_after_dot}\n")
     file.write(f"`define {prefix}_A_AFTER_DOT {filter.a_after_dot}\n\n")
 
+
 # Band pass filter that ensures that the chroma signal doesn't bleed into the luma frequency range during transitions
 def generate_chroma_filter():
     b_after_dot = 5
@@ -127,6 +128,7 @@ def generate_secam_preemphasis():
     b, a = signal.sos2tf(sos)
     fpfilter = FpFilter(b, a, b_after_dot, a_after_dot)
     print_filter("SECAM_PREEMPHASIS", fpfilter)
+
 
 # I have to be honest here. I don't understand what I'm doing here.
 # The HF preemphasis provides a square function which, if implemented

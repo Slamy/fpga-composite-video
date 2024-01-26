@@ -1,0 +1,110 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Thu Jan 25 18:06:07 2024
+[*]
+[dumpfile] "/home/andre/GIT/fpga_pong/sim/waveform.vcd"
+[dumpfile_mtime] "Thu Jan 25 18:00:26 2024"
+[dumpfile_size] 232787416
+[savefile] "/home/andre/GIT/fpga_pong/sim/convolver.gtkw"
+[timestart] 184305
+[size] 1920 1152
+[pos] -1 -1
+*-5.277835 184457 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.top_testpic_generator.
+[treeopen] TOP.top_testpic_generator.fb.
+[sst_width] 315
+[signals_width] 378
+[sst_expanded] 1
+[sst_vpaned_height] 347
+@22
+TOP.top_testpic_generator.fb.bus.addr[20:0]
+@28
+TOP.top_testpic_generator.fb.bus.clk
+TOP.top_testpic_generator.fb.bus.cmd
+TOP.top_testpic_generator.fb.bus.cmd_en
+@22
+TOP.top_testpic_generator.fb.bus.data_mask[7:0]
+TOP.top_testpic_generator.fb.bus.rd_data[63:0]
+@28
+TOP.top_testpic_generator.fb.bus.rd_data_valid
+TOP.top_testpic_generator.fb.bus.ready
+@22
+TOP.top_testpic_generator.fb.bus.wr_data[63:0]
+TOP.top_testpic_generator.fb.RegisterHighAddr[7:0]
+@28
+TOP.top_testpic_generator.fb.clk
+@22
+TOP.top_testpic_generator.fb.clk_per_pixel[5:0]
+TOP.top_testpic_generator.fb.convolver_in32[31:0]
+@28
+TOP.top_testpic_generator.fb.convolver_input_valid
+@22
+TOP.top_testpic_generator.fb.convolver_out24[23:0]
+@28
+TOP.top_testpic_generator.fb.convolver_out24_ready
+@29
+TOP.top_testpic_generator.fb.convolver_strobe_input
+@28
+TOP.top_testpic_generator.fb.convolver_strobe_out24
+TOP.top_testpic_generator.fb.debug_line_mode
+TOP.top_testpic_generator.fb.increment_fifo_read_pos
+TOP.top_testpic_generator.fb.convolver_input_valid
+TOP.top_testpic_generator.fb.fifo_readout_valid
+TOP.top_testpic_generator.fb.discard_words[2:0]
+@22
+TOP.top_testpic_generator.fb.rgb_conv_in.b[7:0]
+TOP.top_testpic_generator.fb.rgb_conv_in.g[7:0]
+TOP.top_testpic_generator.fb.rgb_conv_in.r[7:0]
+@28
+TOP.top_testpic_generator.fb.even_field
+@22
+TOP.top_testpic_generator.fb.fifo[0][63:0]
+TOP.top_testpic_generator.fb.fifo[1][63:0]
+TOP.top_testpic_generator.fb.fifo[2][63:0]
+TOP.top_testpic_generator.fb.fifo[3][63:0]
+TOP.top_testpic_generator.fb.fifo[4][63:0]
+TOP.top_testpic_generator.fb.fifo[5][63:0]
+TOP.top_testpic_generator.fb.fifo[6][63:0]
+TOP.top_testpic_generator.fb.fifo[7][63:0]
+TOP.top_testpic_generator.fb.fifo[8][63:0]
+TOP.top_testpic_generator.fb.fifo[9][63:0]
+TOP.top_testpic_generator.fb.fifo[10][63:0]
+TOP.top_testpic_generator.fb.fifo[11][63:0]
+TOP.top_testpic_generator.fb.fifo[12][63:0]
+TOP.top_testpic_generator.fb.fifo[13][63:0]
+TOP.top_testpic_generator.fb.fifo[14][63:0]
+TOP.top_testpic_generator.fb.fifo[15][63:0]
+TOP.top_testpic_generator.fb.fifo_free_entries_d[3:0]
+TOP.top_testpic_generator.fb.fifo_free_entries_q[3:0]
+TOP.top_testpic_generator.fb.fifo_read_pos[4:0]
+TOP.top_testpic_generator.fb.fifo_read_pos_q[4:0]
+TOP.top_testpic_generator.fb.fifo_read_word[63:0]
+TOP.top_testpic_generator.fb.fifo_write_pos[3:0]
+TOP.top_testpic_generator.fb.fifo_write_pos_q[3:0]
+TOP.top_testpic_generator.fb.height[8:0]
+TOP.top_testpic_generator.fb.line_addr[20:0]
+TOP.top_testpic_generator.fb.read_addr[20:0]
+TOP.top_testpic_generator.fb.start_addr_even_field[20:0]
+TOP.top_testpic_generator.fb.start_addr_odd_field[20:0]
+@28
+TOP.top_testpic_generator.fb.newframe
+TOP.top_testpic_generator.fb.newline
+@22
+TOP.top_testpic_generator.fb.pixel_count[5:0]
+TOP.top_testpic_generator.fb.pixel_data[31:0]
+TOP.top_testpic_generator.fb.pixel_x[9:0]
+@28
+TOP.top_testpic_generator.fb.restart_line
+TOP.top_testpic_generator.fb.rgb_mode
+@22
+TOP.top_testpic_generator.fb.stride[15:0]
+TOP.top_testpic_generator.fb.video_x[12:0]
+TOP.top_testpic_generator.fb.video_y[8:0]
+TOP.top_testpic_generator.fb.width[9:0]
+TOP.top_testpic_generator.fb.window_h_start[7:0]
+TOP.top_testpic_generator.fb.windows_v_start[6:0]
+TOP.top_testpic_generator.fb.windows_v_start_9bit_d[8:0]
+TOP.top_testpic_generator.fb.windows_v_start_9bit_q[8:0]
+[pattern_trace] 1
+[pattern_trace] 0

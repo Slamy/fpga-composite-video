@@ -61,6 +61,6 @@
 
 `define PAL_BURST_U -8
 `define PAL_BURST_V 8
-`define NTSC_BURST_U -13
+`define NTSC_BURST_U -14
 `define NTSC_BURST_V 4
 

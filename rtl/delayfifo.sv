@@ -17,16 +17,10 @@ module delayfifo #(
 );
 
     // Storage memory
-    bit [BIT_WIDTH-1:0] delay_mem[1<<SIZE];
+    bit [BIT_WIDTH-1:0] delay_mem[1<<SIZE] = '{default: '0};
 
     // Current index for writing and reading at the same time.
     bit [SIZE-1:0] index = 0;
-
-    // Initialize memory with zeroes.
-    initial begin
-        delay_mem = '{default: '0};
-        out = 0;
-    end
 
     always_ff @(posedge clk) begin
         // Use the current memory position for writing and reading.

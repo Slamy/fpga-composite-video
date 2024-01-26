@@ -17,16 +17,17 @@
         <File path="../rtl/debug_busmaster.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/delayfifo.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/ebu75.sv" type="file.verilog" enable="1"/>
-        <File path="../rtl/filter/filter_secam_deemphasis.sv" type="file.verilog" enable="1"/>
-        <File path="../rtl/filter/filter_pal_ntsc_carrier.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/filter/filter_pal_chroma_lowpass.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/filter/filter_pal_luma.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/filter/filter_pal_ntsc_carrier.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/filter/filter_secam_amplitude_lowpass.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/filter/filter_secam_chroma_lowpass.sv" type="file.verilog" enable="1"/>
-        <File path="../rtl/filter/filter_pal_chroma_lowpass.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/filter/filter_secam_deemphasis.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/framebuffer.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/logic_analyzer.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/memory_tester.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/pal_ntsc_encoder.sv" type="file.verilog" enable="1"/>
+        <File path="../rtl/pixel_convolver.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/qam.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/rgbbars.sv" type="file.verilog" enable="1"/>
         <File path="../rtl/secam_ampl.sv" type="file.verilog" enable="1"/>

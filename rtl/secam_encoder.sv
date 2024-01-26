@@ -95,9 +95,9 @@ module secam_encoder (
     // calculate emphasis swing using deemphasis result
     always_ff @(posedge clk) begin
         if (even_line) begin  // Db or U
-            carrier_period_emphasis <= (debug_db_swing * err) + (13'(carrier_period_deemphasis)<<<4);
+            carrier_period_emphasis <= (debug_db_swing * err) + (13'(carrier_period_deemphasis) <<< 4);
         end else begin  // Dr or V
-            carrier_period_emphasis <= (debug_dr_swing * err) + (13'(carrier_period_deemphasis)<<<4);
+            carrier_period_emphasis <= (debug_dr_swing * err) + (13'(carrier_period_deemphasis) <<< 4);
         end
     end
 

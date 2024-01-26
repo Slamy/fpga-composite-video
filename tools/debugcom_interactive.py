@@ -137,7 +137,7 @@ def ebu75_interactive():
     clks_per_pixel = 9
     width = 256
     lines_per_field = 256
-    height = debugcom.configure_framebuffer(width, lines_per_field, interlacing_mode, clks_per_pixel)
+    height = debugcom.configure_framebuffer(width, lines_per_field, interlacing_mode, 32, clks_per_pixel)
 
     set_default_scalers(debugcom)
     debugcom.configure_video_standard("SECAM")

@@ -72,8 +72,8 @@ def grab_and_check_ebu75(videonorm, rgb_value):
 
     print(f"{videonorm:>8}: | RsR RsG RsB | ResY ResU ResV | RefY RefU RefV | DevY DevU DevV |")
 
-    u_dev_list= []
-    v_dev_list= []
+    u_dev_list = []
+    v_dev_list = []
 
     for i in range(len(results_rgb)):
         y_dev = results_ycbcr[i][0] - reference_ycbcr[i][0]
@@ -89,10 +89,10 @@ def grab_and_check_ebu75(videonorm, rgb_value):
               f"{reference_ycbcr[i][0]:>4} {reference_ycbcr[i][1]:>4} {reference_ycbcr[i][2]:>4} | "
               f"{results_deviation[i][0]:>4} {results_deviation[i][1]:>4} {results_deviation[i][2]:>4} | ")
 
-    u_dev_avg = sum(u_dev_list)/len(u_dev_list)
-    v_dev_avg = sum(v_dev_list)/len(v_dev_list)
+    u_dev_avg = sum(u_dev_list) / len(u_dev_list)
+    v_dev_avg = sum(v_dev_list) / len(v_dev_list)
 
-    print("                                                                 " 
+    print("                                                                 "
           f"{round(u_dev_avg):>4} {round(v_dev_avg):>4}")
 
     return frame, results_rgb
@@ -105,7 +105,7 @@ def test_colorbars():
     clks_per_pixel = 9
     width = 256
     lines_per_field = 256
-    height = debugcom.configure_framebuffer(width, lines_per_field, interlacing_mode, clks_per_pixel)
+    height = debugcom.configure_framebuffer(width, lines_per_field, interlacing_mode, 32, clks_per_pixel)
     debugcom.enable_single_line_mode(True)
     debugcom.enable_qam_chroma_bandpass(True)
     debugcom.enable_chroma_output(True)
