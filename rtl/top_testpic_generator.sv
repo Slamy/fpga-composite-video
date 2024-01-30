@@ -217,15 +217,10 @@ module top_testpic_generator (
         end
     end
 
-    wire [7:0] bw_data = dbus.write_data;
-    wire bw_strobe = dbus.addr == 10 && dbus.write_enable;
-    wire bw_reset = dbus.addr == 11 && dbus.write_enable;
     assign dbus.ready = 1;
 
     burst_writer bw (
-        .reset(bw_reset),
-        .data(bw_data),
-        .strobe(bw_strobe),
+        .dbus,
         .mem(debug_mem_bus)
     );
 

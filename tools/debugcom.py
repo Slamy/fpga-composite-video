@@ -119,7 +119,7 @@ class DebugCom:
             assert False, f"{bits_per_pixel} is not allowed. Either 24 or 32 bits per pixel!"
 
         # Move framebuffer away from calibration addresses
-        even_field_addr = 0x500
+        even_field_addr = 0x200
         odd_field_addr = even_field_addr + stride
 
         # Double stride for interlacing so every other line is skipped

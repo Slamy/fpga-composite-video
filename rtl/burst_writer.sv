@@ -3,11 +3,12 @@
  * Ensures efficient usage of memory controller bandwidth during larger memory writes.
  */
 module burst_writer (
-    input reset,
-    input [7:0] data,
-    input strobe,
+    debug_bus_if.slave  dbus,  // debug bus slave for register access
     burst_bus_if.master mem
 );
+    wire chip_enable = dbus.addr[15:8] == 8'h0a;
+    wire write_enable = dbus.write_enable && chip_enable;
+    wire strobe = write_enable && (dbus.addr[4:0] == 4);
 
     bit [63:0] burst_data[4];
     bit [4:0] burst_data_write_address = 0;
@@ -18,32 +19,46 @@ module burst_writer (
     bit increment_burst_addr;
 
     always_ff @(posedge mem.clk) begin
-        if (reset) begin
-            mem.addr <= 21'h500;  // TODO make configurable
-            burst_data_write_address <= 0;
-            burst_data_read_adr_q <= 0;
-        end else begin
-            if (strobe) begin
-                case (burst_data_write_address[2:0])
-                    0: burst_data[burst_data_write_address[4:3]][63:56] <= data;
-                    1: burst_data[burst_data_write_address[4:3]][55:48] <= data;
-                    2: burst_data[burst_data_write_address[4:3]][47:40] <= data;
-                    3: burst_data[burst_data_write_address[4:3]][39:32] <= data;
-                    4: burst_data[burst_data_write_address[4:3]][31:24] <= data;
-                    5: burst_data[burst_data_write_address[4:3]][23:16] <= data;
-                    6: burst_data[burst_data_write_address[4:3]][15:8] <= data;
-                    7: burst_data[burst_data_write_address[4:3]][7:0] <= data;
-                    default: ;
-                endcase
-                burst_data_write_address <= burst_data_write_address + 1;
-            end
 
-            mem.wr_data <= burst_data[burst_data_read_adr_d];
-            mem.cmd_en <= cmd_en_d;
-            burst_data_read_adr_q <= burst_data_read_adr_d;
-
-            if (increment_burst_addr) mem.addr <= mem.addr + 8;
+        if (write_enable) begin
+            case (dbus.addr[4:0])
+                // 4 first registers to reset the write address
+                0: begin  // Ignore highest byte
+                end
+                1: mem.addr[20:16] <= dbus.write_data[4:0];
+                2: mem.addr[15:8] <= dbus.write_data;
+                3: begin
+                    mem.addr[7:0] <= dbus.write_data;
+                    // use the lowest significant byte to
+                    // initialize the machine
+                    burst_data_write_address <= 0;
+                    burst_data_read_adr_q <= 0;
+                end
+                // Register 4 to feed the actual burst data
+                4: begin
+                    case (burst_data_write_address[2:0])
+                        0: burst_data[burst_data_write_address[4:3]][63:56] <= dbus.write_data;
+                        1: burst_data[burst_data_write_address[4:3]][55:48] <= dbus.write_data;
+                        2: burst_data[burst_data_write_address[4:3]][47:40] <= dbus.write_data;
+                        3: burst_data[burst_data_write_address[4:3]][39:32] <= dbus.write_data;
+                        4: burst_data[burst_data_write_address[4:3]][31:24] <= dbus.write_data;
+                        5: burst_data[burst_data_write_address[4:3]][23:16] <= dbus.write_data;
+                        6: burst_data[burst_data_write_address[4:3]][15:8] <= dbus.write_data;
+                        7: burst_data[burst_data_write_address[4:3]][7:0] <= dbus.write_data;
+                        default: ;
+                    endcase
+                    burst_data_write_address <= burst_data_write_address + 1;
+                end
+                default: begin  // do nothing
+                end
+            endcase
         end
+
+        mem.wr_data <= burst_data[burst_data_read_adr_d];
+        mem.cmd_en <= cmd_en_d;
+        burst_data_read_adr_q <= burst_data_read_adr_d;
+
+        if (increment_burst_addr) mem.addr <= mem.addr + 8;
     end
 
     always_comb begin

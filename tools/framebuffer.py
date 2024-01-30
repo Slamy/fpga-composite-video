@@ -46,7 +46,7 @@ def transfer_picture(debugcom: DebugCom, testpic, rgb_mode, padbyte):
     end = time.time()
     print(f"Took {end - start} seconds")
 
-    debugcom.memwrite_s8(11, 0)
+    debugcom.memwrite_u32be(0xa00, 0x200)
 
     # 256 byte is the maximum number of bytes we can currently transfer in one block transfer.
     # Always transfer full blocks to ensure that every transferred block is also burst written
@@ -61,7 +61,7 @@ def transfer_picture(debugcom: DebugCom, testpic, rgb_mode, padbyte):
     rawdata_splitted = np.array_split(rawdata, number_of_chunks)
     for chunk in rawdata_splitted:
         assert (len(chunk) == 256), "Something went wrong! Chunksize not full block!"
-        debugcom.blockmemwrite_u8(10, chunk)
+        debugcom.blockmemwrite_u8(0xa04, chunk)
     end = time.time()
 
     print(f"Took {end - start} seconds")
